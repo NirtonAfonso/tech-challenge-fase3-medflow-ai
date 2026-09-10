@@ -47,20 +47,28 @@ PLACEHOLDERS: dict[str, str] = {
     "crm": "[CRM_REMOVIDO]",
 }
 
+# Guardas contra falso positivo dentro de UUIDs, hashes e identificadores
+# técnicos: um trace_id como "d8d80869-1234-97fc-..." contém sequências que, sem
+# esta proteção, seriam confundidas com telefone ou CEP.
+_NOT_ID_BEFORE = r"(?<![\w\-.])"
+_NOT_ID_AFTER = r"(?![\w\-]|\.\d)"
+
 # A ordem importa: padrões mais específicos são aplicados primeiro para que um
 # CPF não seja capturado por um padrão genérico de número.
 _PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     # CNS (Cartão Nacional de Saúde): 15 dígitos, com ou sem separadores.
-    ("cns", re.compile(r"\b\d{3}[.\s]?\d{4}[.\s]?\d{4}[.\s]?\d{4}\b")),
+    ("cns", re.compile(rf"{_NOT_ID_BEFORE}\d{{3}}[.\s]?\d{{4}}[.\s]?\d{{4}}[.\s]?\d{{4}}{_NOT_ID_AFTER}")),
     # CPF: 000.000.000-00 ou 11 dígitos contíguos.
-    ("cpf", re.compile(r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b|\b\d{11}\b")),
+    ("cpf", re.compile(
+        rf"{_NOT_ID_BEFORE}\d{{3}}\.\d{{3}}\.\d{{3}}-\d{{2}}{_NOT_ID_AFTER}"
+        rf"|{_NOT_ID_BEFORE}\d{{11}}{_NOT_ID_AFTER}")),
     ("email", re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")),
     # Telefone brasileiro com DDD, fixo ou celular.
     (
         "telefone",
-        re.compile(r"(?:\+55[\s-]?)?\(?\d{2}\)?[\s-]?9?\d{4}[\s-]?\d{4}\b"),
+        re.compile(rf"{_NOT_ID_BEFORE}(?:\+55[\s-]?)?\(?\d{{2}}\)?[\s-]?9?\d{{4}}[\s-]?\d{{4}}{_NOT_ID_AFTER}"),
     ),
-    ("cep", re.compile(r"\b\d{5}-?\d{3}\b")),
+    ("cep", re.compile(rf"{_NOT_ID_BEFORE}\d{{5}}-?\d{{3}}{_NOT_ID_AFTER}")),
     ("rg", re.compile(r"\bRG[:\s]*[\d.\-xX]{7,14}\b", re.IGNORECASE)),
     ("crm", re.compile(r"\bCRM[/\s-]?[A-Z]{0,2}[:\s]*\d{4,7}\b", re.IGNORECASE)),
     (

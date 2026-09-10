@@ -107,3 +107,15 @@ def test_datas_soltas_sao_removidas_quando_solicitado() -> None:
     texto = "Consulta realizada em 04/02/2026."
     assert "04/02/2026" in anonymize_text(texto)[0]
     assert "04/02/2026" not in anonymize_text(texto, redact_dates=True)[0]
+
+
+def test_identificador_tecnico_nao_e_confundido_com_pii() -> None:
+    """Regressão: dígitos dentro de UUID/chunk_id já foram lidos como telefone."""
+    tecnico = (
+        "trace d8d80869-1234-97fc-0bc888eca5c2 chunk PROT-END-001#7::0::5c006de6 "
+        "hash cd4369642b83842e"
+    )
+    limpo, relatorio = anonymize_text(tecnico)
+    assert limpo == tecnico
+    assert relatorio.total == 0
+    assert not contains_pii(tecnico)

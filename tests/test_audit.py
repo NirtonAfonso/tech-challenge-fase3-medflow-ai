@@ -84,3 +84,14 @@ def test_serializacao_e_estavel() -> None:
 
 def test_leitura_sem_arquivo_retorna_vazio(tmp_path) -> None:
     assert AuditLogger(tmp_path / "inexistente.jsonl").read_events() == []
+
+
+def test_trace_id_nao_e_alterado_pela_anonimizacao(tmp_path) -> None:
+    """Regressão: o trace_id precisa sobreviver intacto para a auditoria funcionar."""
+    logger = AuditLogger(tmp_path / "audit.jsonl")
+    trace_id = "d8d80869-1234-97fc-0bc888eca5c2"
+    gravado = logger.log(
+        build_audit_event(trace_id=trace_id, route="clinical_question", sources=["PROT-END-001#7"])
+    )
+    assert gravado["trace_id"] == trace_id
+    assert gravado["sources"] == ["PROT-END-001#7"]

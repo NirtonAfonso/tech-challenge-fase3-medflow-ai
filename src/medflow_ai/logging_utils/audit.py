@@ -44,6 +44,15 @@ SENSITIVE_KEYS: frozenset[str] = frozenset(
 
 _REDACTED = "[REDACTED]"
 
+# Chaves cujo valor é identificador técnico (não PII) e não deve ser reescrito
+# pela anonimização de texto livre.
+PASSTHROUGH_KEYS: frozenset[str] = frozenset(
+    {
+        "trace_id", "timestamp", "patient_id_hash", "chunk_id", "section_id", "doc_id",
+        "content_hash", "policy_version", "prompt_version", "run_id", "id",
+    }
+)
+
 
 def pseudonymize(value: str, *, salt: str | None = None, length: int = 16) -> str:
     """Hash estável e salgado de um identificador (não expõe o valor original)."""
@@ -59,8 +68,11 @@ def redact(payload: Any, *, anonymize_strings: bool = True) -> Any:
     if isinstance(payload, Mapping):
         cleaned: dict[str, Any] = {}
         for key, value in payload.items():
-            if str(key).strip().lower() in SENSITIVE_KEYS:
+            lowered = str(key).strip().lower()
+            if lowered in SENSITIVE_KEYS:
                 cleaned[str(key)] = _REDACTED
+            elif lowered in PASSTHROUGH_KEYS:
+                cleaned[str(key)] = value
             else:
                 cleaned[str(key)] = redact(value, anonymize_strings=anonymize_strings)
         return cleaned

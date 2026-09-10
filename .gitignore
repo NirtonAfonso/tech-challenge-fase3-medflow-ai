@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets / environment
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local databases and generated artifacts
+*.db
+*.sqlite
+*.sqlite3
+logs/
+checkpoints/
+outputs/
+wandb/
+mlruns/
+
+# Model weights / large files
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.joblib
+*.pkl
+*.keras
+
+# Raw/private data: never version real patient data
+data/raw/*
+!data/raw/.gitkeep
+data/private/
+
+# Generated processed data may be large; keep only approved samples
+artifacts/generated/

@@ -91,7 +91,7 @@
         "audit_log"
       ],
       "revisao_humana": false,
-      "fontes": 5,
+      "fontes": 4,
       "safety_status": "CAUTION"
     }
   ]

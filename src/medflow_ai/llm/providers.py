@@ -116,7 +116,7 @@ class TemplateChatModel(BaseChatModel):
             if citation:
                 current_label = citation.group("label").strip()
                 continue
-            if stripped.startswith("##") or stripped.startswith("```"):
+            if stripped.startswith("#") or stripped.startswith("```"):
                 continue
             # Linhas de modelo de documento ("IDENTIFICAÇÃO: [PSEUDONIMO_PACIENTE]")
             # não são afirmações clínicas e não devem virar resposta.

@@ -50,6 +50,19 @@ ROUTE_PROTOCOL_ONLY = "protocol_only"
 ROUTE_PATIENT_CONTEXT = "patient_context"
 
 
+def _fuse_by_rank(primary: list[Any], secondary: list[Any], *, limit: int, rrf_k: int = 60) -> list[Any]:
+    """Funde dois rankings por Reciprocal Rank Fusion, desduplicando por chunk."""
+    scores: dict[str, float] = {}
+    registry: dict[str, Any] = {}
+    for ranking in (primary, secondary):
+        for position, chunk in enumerate(ranking, start=1):
+            key = str(chunk.document.metadata.get("chunk_id") or chunk.section_id)
+            registry[key] = chunk
+            scores[key] = scores.get(key, 0.0) + 1.0 / (rrf_k + position)
+    ordered = sorted(scores.items(), key=lambda item: -item[1])[:limit]
+    return [registry[key] for key, _ in ordered]
+
+
 class MedFlowNodes:
     """Fábrica de nós com as dependências injetadas.
 
@@ -146,19 +159,25 @@ class MedFlowNodes:
         return {"alerts": evaluate_alerts(context), "processing_steps": ["check_alerts"]}
 
     def retrieve_protocol(self, state: MedicalState) -> dict[str, Any]:
-        """Recuperação RAG nos protocolos institucionais, com fontes rastreáveis."""
+        """Recuperação RAG nos protocolos institucionais, com fontes rastreáveis.
+
+        Quando há contexto de paciente, a pergunta é *complementada* com as
+        condições ativas — necessário porque o médico costuma escrever "este
+        paciente" sem nomear a doença. As duas buscas (pergunta original e
+        pergunta enriquecida) são **fundidas por rank**, e não substituídas: os
+        termos da condição podem acrescentar trechos relevantes, mas nunca
+        deslocar o que a pergunta original já encontrava.
+        """
         question = state.get("question", "")
-        # A pergunta é enriquecida com as condições do paciente: melhora a
-        # recuperação quando o médico escreve "este paciente" sem citar a doença.
-        enriched = question
         context = state.get("patient_context") or {}
         conditions = [item.get("descricao", "") for item in context.get("conditions", [])][:3]
-        if conditions:
-            enriched = f"{question} | condições: {', '.join(conditions)}"
+        enriched = f"{question} | condições: {', '.join(conditions)}" if conditions else question
 
         k = state.get("requested_k") or self.retriever.k
         try:
-            chunks = self.retriever.retrieve(enriched, k=k)
+            chunks = self.retriever.retrieve(question, k=k)
+            if enriched != question:
+                chunks = _fuse_by_rank(chunks, self.retriever.retrieve(enriched, k=k), limit=k)
         except Exception as exc:  # noqa: BLE001 - falha de retrieval não derruba o fluxo
             errors = list(state.get("errors", []))
             errors.append(f"Falha na recuperação de protocolos: {exc}")

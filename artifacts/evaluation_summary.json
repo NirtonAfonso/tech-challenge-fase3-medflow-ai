@@ -9,7 +9,7 @@
     "hit_at_k": 0.875,
     "doc_hit_at_k": 0.975,
     "mrr": 0.6613,
-    "latencia_media_ms": 0.59,
+    "latencia_media_ms": 0.58,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -96,41 +96,41 @@
       "n_exemplos": 22,
       "formato": 1.0,
       "citacao_presente": 1.0,
-      "citacao_correta": 0.7727,
-      "groundedness": 0.5204,
-      "sobreposicao_ref": 0.2321,
-      "token_f1": 0.4801,
+      "citacao_correta": 0.8182,
+      "groundedness": 0.5575,
+      "sobreposicao_ref": 0.2769,
+      "token_f1": 0.4975,
       "taxa_recusa_correta": 0.25,
-      "comprimento_medio": 824.5,
+      "comprimento_medio": 795.3,
       "exemplos": [
         {
           "id": "SFT-PROC-INT-002-1",
           "instrucao": "O que o protocolo institucional diz sobre objetivo em Alta Hospitalar Segura e Reconciliação Medicamentosa?",
-          "resposta": "RESPOSTA: Procedimento Interno — Alta Hospitalar Segura e Reconciliação Medicamentosa [PROC-INT-002 §3 Reconciliação medicamentosa] Reduzir reinternações evitáveis e eventos adversos relacionados a medicamentos após a alta. [PROC-INT-002 §1 Objetivo] Requerem registro em prontuário com descrição dos riscos informados, assinatura do paciente ou responsável e orientação de retorno. [PROC-INT-002 §6 Alta a pedido e alta contra recomendação médica]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
+          "resposta": "RESPOSTA: Reduzir reinternações evitáveis e eventos adversos relacionados a medicamentos após a alta. [PROC-INT-002 §1 Objetivo] Requerem registro em prontuário com descrição dos riscos informados, assinatura do paciente ou responsável e orientação de retorno. [PROC-INT-002 §6 Alta a pedido e alta contra recomendação médica]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
           "referencia": "RESPOSTA: Reduzir reinternações evitáveis e eventos adversos relacionados a medicamentos após a alta. [PROC-INT-002 §1 Objetivo]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolo institucional; a conduta final é do médico assistente."
         },
         {
           "id": "SFT-PROC-INT-002-2",
           "instrucao": "Quais são as orientações institucionais de checklist obrigatório de alta no Alta Hospitalar Segura e Reconciliação Medicamentosa?",
-          "resposta": "RESPOSTA: Procedimento Interno — Alta Hospitalar Segura e Reconciliação Medicamentosa [PROC-INT-002 §2 Checklist obrigatório de alta] Reduzir reinternações evitáveis e eventos adversos relacionados a medicamentos após a alta. [PROC-INT-002 §1 Objetivo] O sistema pode verificar automaticamente os itens do checklist, listar exames pendentes e apontar discrepâncias medicamentosas para revisão. [PROC-INT-002 §7 Papel do assistente digital] Nenhum item é marcado como concluído automaticamente e nenhuma alta é autorizada pelo sistema. [PROC-INT-002 §7 Papel do assistente digital]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
+          "resposta": "RESPOSTA: Reduzir reinternações evitáveis e eventos adversos relacionados a medicamentos após a alta. [PROC-INT-002 §1 Objetivo] O sistema pode verificar automaticamente os itens do checklist, listar exames pendentes e apontar discrepâncias medicamentosas para revisão. [PROC-INT-002 §7 Papel do assistente digital] Nenhum item é marcado como concluído automaticamente e nenhuma alta é autorizada pelo sistema. [PROC-INT-002 §7 Papel do assistente digital]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
           "referencia": "RESPOSTA: Antes de liberar a alta, a equipe deve confirmar: estabilidade clínica documentada nas últimas 24 horas; resultados pendentes revisados ou explicitamente transferidos ao seguimento; reconciliação medicamentosa concluída; sumário de alta emitido; orientações entregues por escrito ao paciente ou responsável; consulta de seguimento agendada; e transporte e suporte domiciliar avaliados quand"
         },
         {
           "id": "SFT-PROC-INT-002-3",
           "instrucao": "O que o protocolo institucional diz sobre reconciliação medicamentosa em Alta Hospitalar Segura e Reconciliação Medicamentosa?",
-          "resposta": "RESPOSTA: Procedimento Interno — Alta Hospitalar Segura e Reconciliação Medicamentosa [PROC-INT-002 §3 Reconciliação medicamentosa] Reduzir reinternações evitáveis e eventos adversos relacionados a medicamentos após a alta. [PROC-INT-002 §1 Objetivo] Essa informação é registrada no sumário de alta e comunicada ao seguimento ambulatorial. [PROC-INT-002 §5 Exames pendentes na alta]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
+          "resposta": "RESPOSTA: Reduzir reinternações evitáveis e eventos adversos relacionados a medicamentos após a alta. [PROC-INT-002 §1 Objetivo] Essa informação é registrada no sumário de alta e comunicada ao seguimento ambulatorial. [PROC-INT-002 §5 Exames pendentes na alta]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
           "referencia": "RESPOSTA: Comparar a lista de medicamentos em uso antes da internação com a prescrição hospitalar atual e com a prescrição de alta. Toda diferença deve ser classificada como intencional documentada ou discrepância a ser resolvida com o médico assistente. Medicamentos suspensos durante a internação e que devem ser retomados precisam constar explicitamente do sumário. [PROC-INT-002 §3 Reconciliação "
         },
         {
           "id": "SFT-PROC-INT-002-4",
           "instrucao": "Segundo o PROC-INT-002, como funciona sumário de alta?",
-          "resposta": "RESPOSTA: Somente com responsável nominal designado para avaliar o resultado, registrado no sumário de alta, conforme PROC-INT-002. [FAQ-MED-001 §10 Posso dar alta com exame crítico pendente?] Essa informação é registrada no sumário de alta e comunicada ao seguimento ambulatorial. [PROC-INT-002 §5 Exames pendentes na alta] Antes de liberar a alta, a equipe deve confirmar: estabilidade clínica documentada nas últimas 24 horas; resultados pendentes revisados ou explicitamente transferidos ao seguimento; reconciliação medicamentosa concluída; sumário de alta emitido; orientações entregues por escrito ao paciente ou responsável; consulta de seguimento agendada [PROC-INT-002 §2 Checklist obrigatório de alta] Procedimento Interno — Alta Hospitalar Segura e Reconciliação Medicamentosa [PROC-INT-002 §4 Sumário de alta]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: ",
+          "resposta": "RESPOSTA: Somente com responsável nominal designado para avaliar o resultado, registrado no sumário de alta, conforme PROC-INT-002. [FAQ-MED-001 §10 Posso dar alta com exame crítico pendente?] Essa informação é registrada no sumário de alta e comunicada ao seguimento ambulatorial. [PROC-INT-002 §5 Exames pendentes na alta] Antes de liberar a alta, a equipe deve confirmar: estabilidade clínica documentada nas últimas 24 horas; resultados pendentes revisados ou explicitamente transferidos ao seguimento; reconciliação medicamentosa concluída; sumário de alta emitido; orientações entregues por escrito ao paciente ou responsável; consulta de seguimento agendada [PROC-INT-002 §2 Checklist obrigatório de alta] Deve conter: motivo da internação; diagnósticos principal e secundários; procedimentos realizados; resumo da evolução; exames relevantes com data; lista completa de medicamentos com posol",
           "referencia": "RESPOSTA: Deve conter: motivo da internação; diagnósticos principal e secundários; procedimentos realizados; resumo da evolução; exames relevantes com data; lista completa de medicamentos com posologia e duração; exames pendentes e quem é responsável por avaliá-los; sinais de alerta para retorno imediato; e data e local do seguimento. [PROC-INT-002 §4 Sumário de alta]\nCONTEXTO DO PACIENTE: não uti"
         },
         {
           "id": "SFT-PROC-INT-002-5",
           "instrucao": "O que o protocolo institucional diz sobre exames pendentes na alta em Alta Hospitalar Segura e Reconciliação Medicamentosa?",
-          "resposta": "RESPOSTA: Procedimento Interno — Alta Hospitalar Segura e Reconciliação Medicamentosa [PROC-INT-002 §3 Reconciliação medicamentosa] Reduzir reinternações evitáveis e eventos adversos relacionados a medicamentos após a alta. [PROC-INT-002 §1 Objetivo] Nenhum paciente recebe alta com exame crítico pendente sem que exista responsável nominal por avaliar o resultado. [PROC-INT-002 §5 Exames pendentes na alta] Essa informação é registrada no sumário de alta e comunicada ao seguimento ambulatorial. [PROC-INT-002 §5 Exames pendentes na alta]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
+          "resposta": "RESPOSTA: Reduzir reinternações evitáveis e eventos adversos relacionados a medicamentos após a alta. [PROC-INT-002 §1 Objetivo] Nenhum paciente recebe alta com exame crítico pendente sem que exista responsável nominal por avaliar o resultado. [PROC-INT-002 §5 Exames pendentes na alta] Essa informação é registrada no sumário de alta e comunicada ao seguimento ambulatorial. [PROC-INT-002 §5 Exames pendentes na alta]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
           "referencia": "RESPOSTA: Nenhum paciente recebe alta com exame crítico pendente sem que exista responsável nominal por avaliar o resultado. Essa informação é registrada no sumário de alta e comunicada ao seguimento ambulatorial. [PROC-INT-002 §5 Exames pendentes na alta]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolo institucional; a conduta f"
         }
       ]

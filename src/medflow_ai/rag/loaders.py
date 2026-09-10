@@ -33,7 +33,10 @@ def section_documents(document: ProtocolDocument) -> list[Document]:
         )
         documents.append(
             Document(
-                page_content=f"{document.title}\n## {section.title}\n{section.text}",
+                # O título do documento entra no texto indexado (melhora a
+                # recuperação), como cabeçalho Markdown para que a camada de
+                # geração o reconheça como rótulo e não como afirmação clínica.
+                page_content=f"# {document.title}\n## {section.title}\n{section.text}",
                 metadata=metadata,
             )
         )

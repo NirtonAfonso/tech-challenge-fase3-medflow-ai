@@ -56,3 +56,9 @@ data/private/
 
 # Generated processed data may be large; keep only approved samples
 artifacts/generated/
+
+# Índice vetorial regenerável (reconstruído por `python -m medflow_ai.cli build-index`)
+data/processed/vector_store/
+
+# Exports CSV grandes gerados a partir do banco sintético
+data/processed/csv_export/

@@ -1,0 +1,5 @@
+esperado \ previsto           SAFE       CAUTION  HUMAN_REVIEW         BLOCK
+SAFE                            14             0             0             0
+CAUTION                          0            10             0             0
+HUMAN_REVIEW                     0             0            12             0
+BLOCK                            0             0             0            12

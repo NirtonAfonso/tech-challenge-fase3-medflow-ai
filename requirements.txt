@@ -1,33 +1,22 @@
-# Core
+# ---------------------------------------------------------------------------
+# Dependências de EXECUÇÃO do assistente (sem GPU, sem treinamento).
+# O fine-tuning tem arquivo próprio: requirements-training.txt
+# ---------------------------------------------------------------------------
+
+# Núcleo
 python-dotenv>=1.0,<2.0
-pydantic>=2.8,<3.0
-pandas>=2.2,<3.0
 numpy>=1.26,<3.0
 
-# LLM / Fine-tuning
-transformers>=4.50,<5.0
-datasets>=3.0,<5.0
-accelerate>=1.0,<2.0
-peft>=0.14,<1.0
-trl>=0.15,<1.0
-bitsandbytes>=0.45,<1.0
+# LangChain / LangGraph (linha 1.x)
+langchain>=1.0,<2.0
+langchain-core>=1.0,<2.0
+langchain-community>=0.4,<1.0
+langchain-text-splitters>=1.0,<2.0
+langgraph>=1.0,<2.0
 
-# LangChain / LangGraph
-langchain>=0.3,<1.0
-langchain-community>=0.3,<1.0
-langchain-openai>=0.3,<1.0
-langgraph>=0.4,<1.0
-
-# RAG
-sentence-transformers>=3.3,<6.0
-faiss-cpu>=1.9,<2.0
+# Leitura opcional de PDFs externos (PCDTs oficiais)
 pypdf>=5.0,<7.0
 
-# Evaluation / utilities
-scikit-learn>=1.5,<2.0
-matplotlib>=3.9,<4.0
-tqdm>=4.66,<5.0
-
-# Tests
-pytest>=8.3,<9.0
+# Testes
+pytest>=8.0,<10.0
 pytest-cov>=6.0,<8.0

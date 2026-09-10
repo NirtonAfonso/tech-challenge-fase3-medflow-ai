@@ -1,0 +1,40 @@
+{"id": "RAG-001", "question": "Depois de iniciar a reposição hormonal na tireoide, com que intervalo devo pedir o controle laboratorial?", "gold_doc_id": "PROT-END-001", "gold_section_id": "PROT-END-001#7", "categoria": "seguimento"}
+{"id": "RAG-002", "question": "Quais medicamentos atrapalham a absorção da levotiroxina e qual o afastamento necessário?", "gold_doc_id": "PROT-END-001", "gold_section_id": "PROT-END-001#6", "categoria": "interacao"}
+{"id": "RAG-003", "question": "O que é preciso para fechar o diagnóstico de hipotireoidismo subclínico?", "gold_doc_id": "PROT-END-001", "gold_section_id": "PROT-END-001#5", "categoria": "diagnostico"}
+{"id": "RAG-004", "question": "Em que situações devo mandar o paciente com tireoide baixa para o endocrinologista?", "gold_doc_id": "PROT-END-001", "gold_section_id": "PROT-END-001#8", "categoria": "encaminhamento"}
+{"id": "RAG-005", "question": "Quais achados sugerem coma mixedematoso e o que fazer?", "gold_doc_id": "PROT-END-001", "gold_section_id": "PROT-END-001#9", "categoria": "emergencia"}
+{"id": "RAG-006", "question": "Quem deve ser rastreado com dosagem de TSH pelo protocolo da casa?", "gold_doc_id": "PROT-END-001", "gold_section_id": "PROT-END-001#3", "categoria": "rastreamento"}
+{"id": "RAG-007", "question": "Como diferenciar a origem da tireotoxicose depois do TSH suprimido?", "gold_doc_id": "PROT-END-002", "gold_section_id": "PROT-END-002#4", "categoria": "diagnostico"}
+{"id": "RAG-008", "question": "O que orientar ao paciente em uso de droga antitireoidiana sobre febre e dor de garganta?", "gold_doc_id": "PROT-END-002", "gold_section_id": "PROT-END-002#7", "categoria": "efeito_adverso"}
+{"id": "RAG-009", "question": "Como reconhecer uma crise tireotóxica?", "gold_doc_id": "PROT-END-002", "gold_section_id": "PROT-END-002#8", "categoria": "emergencia"}
+{"id": "RAG-010", "question": "Quais são os valores que confirmam diabetes tipo 2 no adulto?", "gold_doc_id": "PROT-END-003", "gold_section_id": "PROT-END-003#2", "categoria": "diagnostico"}
+{"id": "RAG-011", "question": "Que exames de rastreio de complicação crônica pedir todo ano no diabético?", "gold_doc_id": "PROT-END-003", "gold_section_id": "PROT-END-003#5", "categoria": "rastreamento"}
+{"id": "RAG-012", "question": "Qual meta de hemoglobina glicada usar em idoso frágil?", "gold_doc_id": "PROT-END-003", "gold_section_id": "PROT-END-003#3", "categoria": "meta"}
+{"id": "RAG-013", "question": "Qual o tempo máximo entre a chegada do paciente com dor no peito e a leitura do eletrocardiograma?", "gold_doc_id": "PROT-CAR-001", "gold_section_id": "PROT-CAR-001#2", "categoria": "indicador"}
+{"id": "RAG-014", "question": "Que diagnósticos alternativos não posso deixar passar numa dor torácica?", "gold_doc_id": "PROT-CAR-001", "gold_section_id": "PROT-CAR-001#6", "categoria": "diferencial"}
+{"id": "RAG-015", "question": "Quando o paciente com dor torácica pode ir para casa com segurança?", "gold_doc_id": "PROT-CAR-001", "gold_section_id": "PROT-CAR-001#7", "categoria": "alta"}
+{"id": "RAG-016", "question": "Qual a meta de tempo para reperfusão quando há supra de ST?", "gold_doc_id": "PROT-CAR-001", "gold_section_id": "PROT-CAR-001#5", "categoria": "indicador"}
+{"id": "RAG-017", "question": "Como aferir corretamente a pressão arterial no consultório?", "gold_doc_id": "PROT-CAR-002", "gold_section_id": "PROT-CAR-002#2", "categoria": "tecnica"}
+{"id": "RAG-018", "question": "O que checar antes de considerar que a hipertensão é resistente?", "gold_doc_id": "PROT-CAR-002", "gold_section_id": "PROT-CAR-002#7", "categoria": "manejo"}
+{"id": "RAG-019", "question": "Quais exames fazem parte da avaliação inicial do hipertenso?", "gold_doc_id": "PROT-CAR-002", "gold_section_id": "PROT-CAR-002#4", "categoria": "investigacao"}
+{"id": "RAG-020", "question": "O que precisa ser feito na primeira hora do reconhecimento da sepse?", "gold_doc_id": "PROT-INF-001", "gold_section_id": "PROT-INF-001#4", "categoria": "pacote"}
+{"id": "RAG-021", "question": "Quando devo reavaliar o lactato do paciente séptico?", "gold_doc_id": "PROT-INF-001", "gold_section_id": "PROT-INF-001#5", "categoria": "seguimento"}
+{"id": "RAG-022", "question": "Em quanto tempo revisar o esquema antimicrobiano para descalonar?", "gold_doc_id": "PROT-INF-001", "gold_section_id": "PROT-INF-001#7", "categoria": "manejo"}
+{"id": "RAG-023", "question": "Quais critérios definem estabilidade clínica para trocar antibiótico endovenoso por oral na pneumonia?", "gold_doc_id": "PROT-INF-002", "gold_section_id": "PROT-INF-002#6", "categoria": "manejo"}
+{"id": "RAG-024", "question": "O que fazer se a pneumonia não melhorar em 72 horas?", "gold_doc_id": "PROT-INF-002", "gold_section_id": "PROT-INF-002#8", "categoria": "falha"}
+{"id": "RAG-025", "question": "Qual horário conta para a janela terapêutica no acidente vascular cerebral?", "gold_doc_id": "PROT-NEU-001", "gold_section_id": "PROT-NEU-001#3", "categoria": "tempo"}
+{"id": "RAG-026", "question": "Quais são as metas de tempo do código AVC até a decisão de trombólise?", "gold_doc_id": "PROT-NEU-001", "gold_section_id": "PROT-NEU-001#4", "categoria": "indicador"}
+{"id": "RAG-027", "question": "Preciso pedir raio-x de tórax em toda crise de asma?", "gold_doc_id": "PROT-PNE-001", "gold_section_id": "PROT-PNE-001#5", "categoria": "investigacao"}
+{"id": "RAG-028", "question": "O que verificar antes de dar alta para o paciente asmático do pronto-socorro?", "gold_doc_id": "PROT-PNE-001", "gold_section_id": "PROT-PNE-001#6", "categoria": "alta"}
+{"id": "RAG-029", "question": "Quais são as indicações para iniciar diálise na injúria renal aguda?", "gold_doc_id": "PROT-NEF-001", "gold_section_id": "PROT-NEF-001#6", "categoria": "manejo"}
+{"id": "RAG-030", "question": "Que medidas gerais tomar quando a creatinina sobe no paciente internado?", "gold_doc_id": "PROT-NEF-001", "gold_section_id": "PROT-NEF-001#4", "categoria": "manejo"}
+{"id": "RAG-031", "question": "Quais resultados o laboratório considera valor crítico e como avisa a equipe?", "gold_doc_id": "PROC-INT-001", "gold_section_id": "PROC-INT-001#4", "categoria": "processo"}
+{"id": "RAG-032", "question": "Qual o prazo pactuado para liberar troponina de urgência?", "gold_doc_id": "PROC-INT-001", "gold_section_id": "PROC-INT-001#3", "categoria": "processo"}
+{"id": "RAG-033", "question": "O que precisa constar no sumário de alta do paciente?", "gold_doc_id": "PROC-INT-002", "gold_section_id": "PROC-INT-002#4", "categoria": "processo"}
+{"id": "RAG-034", "question": "Como fazer a reconciliação medicamentosa antes de liberar o paciente?", "gold_doc_id": "PROC-INT-002", "gold_section_id": "PROC-INT-002#3", "categoria": "processo"}
+{"id": "RAG-035", "question": "Quais campos são obrigatórios em uma receita da instituição?", "gold_doc_id": "MOD-REC-001", "gold_section_id": "MOD-REC-001#2", "categoria": "documento"}
+{"id": "RAG-036", "question": "Quais prescrições exigem dupla checagem antes de administrar?", "gold_doc_id": "MOD-REC-001", "gold_section_id": "MOD-REC-001#6", "categoria": "seguranca"}
+{"id": "RAG-037", "question": "Qual a estrutura padrão de um laudo de eletrocardiograma da casa?", "gold_doc_id": "MOD-LAU-001", "gold_section_id": "MOD-LAU-001#3", "categoria": "documento"}
+{"id": "RAG-038", "question": "O que todo laudo institucional precisa conter?", "gold_doc_id": "MOD-LAU-001", "gold_section_id": "MOD-LAU-001#1", "categoria": "documento"}
+{"id": "RAG-039", "question": "O assistente digital pode emitir prescrição para agilizar o atendimento?", "gold_doc_id": "FAQ-MED-001", "gold_section_id": "FAQ-MED-001#9", "categoria": "politica"}
+{"id": "RAG-040", "question": "Posso dar alta se ainda houver exame crítico sem resultado?", "gold_doc_id": "FAQ-MED-001", "gold_section_id": "FAQ-MED-001#10", "categoria": "politica"}

@@ -1,0 +1,56 @@
+{
+  "n_prompts": 48,
+  "accuracy": 1.0,
+  "per_category": {
+    "SAFE": {
+      "total": 14,
+      "corretos": 14,
+      "acuracia": 1.0
+    },
+    "CAUTION": {
+      "total": 10,
+      "corretos": 10,
+      "acuracia": 1.0
+    },
+    "HUMAN_REVIEW": {
+      "total": 12,
+      "corretos": 12,
+      "acuracia": 1.0
+    },
+    "BLOCK": {
+      "total": 12,
+      "corretos": 12,
+      "acuracia": 1.0
+    }
+  },
+  "confusion": {
+    "SAFE": {
+      "SAFE": 14,
+      "CAUTION": 0,
+      "HUMAN_REVIEW": 0,
+      "BLOCK": 0
+    },
+    "CAUTION": {
+      "SAFE": 0,
+      "CAUTION": 10,
+      "HUMAN_REVIEW": 0,
+      "BLOCK": 0
+    },
+    "HUMAN_REVIEW": {
+      "SAFE": 0,
+      "CAUTION": 0,
+      "HUMAN_REVIEW": 12,
+      "BLOCK": 0
+    },
+    "BLOCK": {
+      "SAFE": 0,
+      "CAUTION": 0,
+      "HUMAN_REVIEW": 0,
+      "BLOCK": 12
+    }
+  },
+  "subestimacao": 0,
+  "superestimacao": 0,
+  "erros": [],
+  "policy_version": "1.0.0"
+}

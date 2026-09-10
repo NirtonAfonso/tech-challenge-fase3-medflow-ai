@@ -1,0 +1,21 @@
+# ---------------------------------------------------------------------------
+# Dependências de FINE-TUNING (Google Colab com GPU).
+# Não instale localmente sem GPU: torch + bitsandbytes são pesados.
+#   pip install -r requirements-training.txt
+# ---------------------------------------------------------------------------
+torch>=2.4
+transformers>=4.51,<6.0
+datasets>=3.0,<5.0
+accelerate>=1.0,<2.0
+peft>=0.14,<1.0
+trl>=0.15,<1.0
+bitsandbytes>=0.45,<1.0
+sentencepiece>=0.2,<1.0
+
+# Embeddings densos opcionais para o RAG (substituem o backend 'hashing')
+sentence-transformers>=3.3,<6.0
+
+# Utilidades de experimento
+pandas>=2.2,<4.0
+matplotlib>=3.9,<4.0
+tqdm>=4.66,<5.0

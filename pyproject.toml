@@ -4,9 +4,26 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "medflow-ai"
-version = "0.1.0"
+version = "0.2.0"
 description = "Tech Challenge Fase 3 - assistente clínico acadêmico com Fine-Tuning, RAG, LangChain e LangGraph"
 requires-python = ">=3.11"
+readme = "README.md"
+dependencies = [
+    "python-dotenv>=1.0,<2.0",
+    "numpy>=1.26,<3.0",
+    "langchain>=1.0,<2.0",
+    "langchain-core>=1.0,<2.0",
+    "langchain-community>=0.4,<1.0",
+    "langchain-text-splitters>=1.0,<2.0",
+    "langgraph>=1.0,<2.0",
+]
+
+[project.optional-dependencies]
+pdf = ["pypdf>=5.0,<7.0"]
+dev = ["pytest>=8.0,<10.0", "pytest-cov>=6.0,<8.0"]
+
+[project.scripts]
+medflow = "medflow_ai.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -14,4 +31,15 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q --strict-markers"
+markers = [
+    "gpu: testes que exigem GPU (não executados na CI)",
+]
+
+[tool.coverage.run]
+source = ["src/medflow_ai"]
+omit = ["*/fine_tuning/train.py"]
+
+[tool.coverage.report]
+skip_empty = true
+exclude_lines = ["pragma: no cover", "if __name__ == .__main__.:"]

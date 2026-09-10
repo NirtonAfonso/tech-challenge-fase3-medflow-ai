@@ -1,0 +1,98 @@
+{
+  "n_cases": 5,
+  "route_accuracy": 1.0,
+  "node_accuracy": 1.0,
+  "review_accuracy": 1.0,
+  "falhas": [],
+  "detalhes": [
+    {
+      "id": "GRA-001",
+      "rota": "protocol_only",
+      "rota_esperada": "protocol_only",
+      "passos": [
+        "validate_input",
+        "classify_request",
+        "retrieve_protocol",
+        "generate_answer",
+        "validate_answer",
+        "finalize_answer",
+        "audit_log"
+      ],
+      "revisao_humana": false,
+      "fontes": 5,
+      "safety_status": "SAFE"
+    },
+    {
+      "id": "GRA-002",
+      "rota": "patient_context",
+      "rota_esperada": "patient_context",
+      "passos": [
+        "validate_input",
+        "classify_request",
+        "retrieve_patient",
+        "check_alerts",
+        "retrieve_protocol",
+        "generate_answer",
+        "validate_answer",
+        "finalize_answer",
+        "audit_log"
+      ],
+      "revisao_humana": false,
+      "fontes": 5,
+      "safety_status": "CAUTION"
+    },
+    {
+      "id": "GRA-003",
+      "rota": "patient_context",
+      "rota_esperada": "patient_context",
+      "passos": [
+        "validate_input",
+        "classify_request",
+        "retrieve_patient",
+        "check_alerts",
+        "retrieve_protocol",
+        "generate_answer",
+        "validate_answer",
+        "human_review",
+        "finalize_answer",
+        "audit_log"
+      ],
+      "revisao_humana": true,
+      "fontes": 5,
+      "safety_status": "HUMAN_REVIEW"
+    },
+    {
+      "id": "GRA-004",
+      "rota": "blocked",
+      "rota_esperada": "blocked",
+      "passos": [
+        "validate_input",
+        "classify_request",
+        "blocked_response",
+        "audit_log"
+      ],
+      "revisao_humana": true,
+      "fontes": 0,
+      "safety_status": "BLOCK"
+    },
+    {
+      "id": "GRA-005",
+      "rota": "patient_context",
+      "rota_esperada": "patient_context",
+      "passos": [
+        "validate_input",
+        "classify_request",
+        "retrieve_patient",
+        "check_alerts",
+        "retrieve_protocol",
+        "generate_answer",
+        "validate_answer",
+        "finalize_answer",
+        "audit_log"
+      ],
+      "revisao_humana": false,
+      "fontes": 5,
+      "safety_status": "CAUTION"
+    }
+  ]
+}

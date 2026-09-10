@@ -38,6 +38,13 @@ _COLUMNS: dict[str, tuple[str, ...]] = {
 }
 
 
+def _null_if_blank(value: Any) -> Any:
+    """Converte string vazia em ``None`` (campos ausentes no export do Synthea)."""
+    if isinstance(value, str) and not value.strip():
+        return None
+    return value
+
+
 def insert_rows(connection: sqlite3.Connection, table: str, rows: Sequence[Mapping[str, Any]]) -> int:
     """Insere linhas em uma tabela conhecida, ignorando colunas desconhecidas."""
     if table not in _COLUMNS:
@@ -47,7 +54,9 @@ def insert_rows(connection: sqlite3.Connection, table: str, rows: Sequence[Mappi
     columns = _COLUMNS[table]
     placeholders = ", ".join("?" for _ in columns)
     statement = f"INSERT OR REPLACE INTO {table} ({', '.join(columns)}) VALUES ({placeholders})"
-    payload = [tuple(row.get(column) for column in columns) for row in rows]
+    # CSVs do Synthea trazem campos ausentes como string vazia; normalizar para
+    # NULL mantém consultas como "stop IS NULL" (condição ativa) corretas.
+    payload = [tuple(_null_if_blank(row.get(column)) for column in columns) for row in rows]
     connection.executemany(statement, payload)
     connection.commit()
     return len(payload)

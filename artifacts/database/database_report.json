@@ -1,0 +1,6 @@
+{
+  "n_cases": 30,
+  "exact_match": 1.0,
+  "context_leak_free": true,
+  "falhas": []
+}

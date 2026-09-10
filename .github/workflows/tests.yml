@@ -5,24 +5,52 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  workflow_dispatch:
 
 jobs:
   unit-tests:
+    name: Testes automatizados (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Configurar Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
+          cache: pip
 
-      - name: Install lightweight test dependencies
+      - name: Instalar dependências
         run: |
           python -m pip install --upgrade pip
-          pip install pytest
-          pip install -e . --no-deps
+          pip install -r requirements.txt
+          pip install -e .
 
-      - name: Run tests
-        run: pytest -q
+      - name: Verificar que o pipeline reproduz do zero
+        run: |
+          python -m medflow_ai.cli build-db --patients 8
+          python -m medflow_ai.cli build-index
+          python -m medflow_ai.cli build-dataset
+
+      - name: Rodar testes com cobertura
+        run: pytest --cov --cov-report=term-missing --cov-report=xml
+
+      - name: Rodar avaliações (RAG, segurança, prontuário, grafo)
+        run: python -m medflow_ai.cli evaluate --with-generation
+
+      - name: Publicar artefatos de avaliação
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: metricas-${{ matrix.python-version }}
+          path: |
+            artifacts/**/*.json
+            artifacts/**/*.csv
+            artifacts/**/*.txt
+          if-no-files-found: warn

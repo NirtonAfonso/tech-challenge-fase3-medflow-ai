@@ -9,7 +9,7 @@
     "hit_at_k": 0.525,
     "doc_hit_at_k": 0.75,
     "mrr": 0.525,
-    "latencia_media_ms": 0.13,
+    "latencia_media_ms": 0.21,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -42,7 +42,7 @@
     "hit_at_k": 0.775,
     "doc_hit_at_k": 0.95,
     "mrr": 0.6375,
-    "latencia_media_ms": 0.13,
+    "latencia_media_ms": 0.18,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -65,7 +65,7 @@
     "hit_at_k": 0.825,
     "doc_hit_at_k": 1.0,
     "mrr": 0.65,
-    "latencia_media_ms": 0.13,
+    "latencia_media_ms": 0.19,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -86,7 +86,7 @@
     "hit_at_k": 0.525,
     "doc_hit_at_k": 0.75,
     "mrr": 0.525,
-    "latencia_media_ms": 0.13,
+    "latencia_media_ms": 0.2,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -119,7 +119,7 @@
     "hit_at_k": 0.7,
     "doc_hit_at_k": 0.9,
     "mrr": 0.5958,
-    "latencia_media_ms": 0.23,
+    "latencia_media_ms": 0.32,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -145,7 +145,7 @@
     "hit_at_k": 0.775,
     "doc_hit_at_k": 0.95,
     "mrr": 0.61,
-    "latencia_media_ms": 0.48,
+    "latencia_media_ms": 0.57,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -168,7 +168,7 @@
     "hit_at_k": 0.475,
     "doc_hit_at_k": 0.65,
     "mrr": 0.475,
-    "latencia_media_ms": 0.3,
+    "latencia_media_ms": 0.39,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -203,7 +203,7 @@
     "hit_at_k": 0.725,
     "doc_hit_at_k": 0.95,
     "mrr": 0.5833,
-    "latencia_media_ms": 0.29,
+    "latencia_media_ms": 0.37,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -228,7 +228,7 @@
     "hit_at_k": 0.825,
     "doc_hit_at_k": 0.975,
     "mrr": 0.6058,
-    "latencia_media_ms": 0.29,
+    "latencia_media_ms": 0.39,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -249,7 +249,7 @@
     "hit_at_k": 0.5,
     "doc_hit_at_k": 0.775,
     "mrr": 0.5,
-    "latencia_media_ms": 0.48,
+    "latencia_media_ms": 0.64,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -283,7 +283,7 @@
     "hit_at_k": 0.775,
     "doc_hit_at_k": 0.975,
     "mrr": 0.6375,
-    "latencia_media_ms": 0.52,
+    "latencia_media_ms": 0.62,
     "falhas": [
       "RAG-002",
       "RAG-003",
@@ -306,7 +306,7 @@
     "hit_at_k": 0.875,
     "doc_hit_at_k": 0.975,
     "mrr": 0.6613,
-    "latencia_media_ms": 0.58,
+    "latencia_media_ms": 0.68,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -325,7 +325,7 @@
     "hit_at_k": 0.475,
     "doc_hit_at_k": 0.75,
     "mrr": 0.475,
-    "latencia_media_ms": 0.13,
+    "latencia_media_ms": 0.17,
     "falhas": [
       "RAG-002",
       "RAG-003",
@@ -360,7 +360,7 @@
     "hit_at_k": 0.8,
     "doc_hit_at_k": 0.975,
     "mrr": 0.6125,
-    "latencia_media_ms": 0.14,
+    "latencia_media_ms": 0.17,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -382,7 +382,7 @@
     "hit_at_k": 0.85,
     "doc_hit_at_k": 0.975,
     "mrr": 0.6237,
-    "latencia_media_ms": 0.14,
+    "latencia_media_ms": 0.17,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -402,7 +402,7 @@
     "hit_at_k": 0.475,
     "doc_hit_at_k": 0.75,
     "mrr": 0.475,
-    "latencia_media_ms": 0.14,
+    "latencia_media_ms": 0.17,
     "falhas": [
       "RAG-002",
       "RAG-003",
@@ -437,7 +437,7 @@
     "hit_at_k": 0.55,
     "doc_hit_at_k": 0.9,
     "mrr": 0.5042,
-    "latencia_media_ms": 0.23,
+    "latencia_media_ms": 0.29,
     "falhas": [
       "RAG-002",
       "RAG-003",
@@ -469,7 +469,7 @@
     "hit_at_k": 0.625,
     "doc_hit_at_k": 0.95,
     "mrr": 0.5208,
-    "latencia_media_ms": 0.41,
+    "latencia_media_ms": 0.52,
     "falhas": [
       "RAG-002",
       "RAG-003",
@@ -498,7 +498,7 @@
     "hit_at_k": 0.4,
     "doc_hit_at_k": 0.625,
     "mrr": 0.4,
-    "latencia_media_ms": 0.26,
+    "latencia_media_ms": 0.31,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -536,7 +536,7 @@
     "hit_at_k": 0.775,
     "doc_hit_at_k": 0.975,
     "mrr": 0.5792,
-    "latencia_media_ms": 0.25,
+    "latencia_media_ms": 0.3,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -559,7 +559,7 @@
     "hit_at_k": 0.775,
     "doc_hit_at_k": 1.0,
     "mrr": 0.5792,
-    "latencia_media_ms": 0.28,
+    "latencia_media_ms": 0.3,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -582,7 +582,7 @@
     "hit_at_k": 0.5,
     "doc_hit_at_k": 0.775,
     "mrr": 0.5,
-    "latencia_media_ms": 0.49,
+    "latencia_media_ms": 0.53,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -616,7 +616,7 @@
     "hit_at_k": 0.8,
     "doc_hit_at_k": 0.975,
     "mrr": 0.6417,
-    "latencia_media_ms": 0.46,
+    "latencia_media_ms": 0.53,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -638,7 +638,7 @@
     "hit_at_k": 0.825,
     "doc_hit_at_k": 1.0,
     "mrr": 0.6479,
-    "latencia_media_ms": 0.5,
+    "latencia_media_ms": 0.54,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -659,7 +659,7 @@
     "hit_at_k": 0.475,
     "doc_hit_at_k": 0.75,
     "mrr": 0.475,
-    "latencia_media_ms": 0.13,
+    "latencia_media_ms": 0.18,
     "falhas": [
       "RAG-002",
       "RAG-003",
@@ -694,7 +694,7 @@
     "hit_at_k": 0.8,
     "doc_hit_at_k": 0.975,
     "mrr": 0.6125,
-    "latencia_media_ms": 0.13,
+    "latencia_media_ms": 0.17,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -716,7 +716,7 @@
     "hit_at_k": 0.85,
     "doc_hit_at_k": 0.975,
     "mrr": 0.6237,
-    "latencia_media_ms": 0.14,
+    "latencia_media_ms": 0.17,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -736,7 +736,7 @@
     "hit_at_k": 0.475,
     "doc_hit_at_k": 0.75,
     "mrr": 0.475,
-    "latencia_media_ms": 0.13,
+    "latencia_media_ms": 0.17,
     "falhas": [
       "RAG-002",
       "RAG-003",
@@ -771,7 +771,7 @@
     "hit_at_k": 0.55,
     "doc_hit_at_k": 0.9,
     "mrr": 0.5042,
-    "latencia_media_ms": 0.23,
+    "latencia_media_ms": 0.29,
     "falhas": [
       "RAG-002",
       "RAG-003",
@@ -803,7 +803,7 @@
     "hit_at_k": 0.625,
     "doc_hit_at_k": 0.95,
     "mrr": 0.5208,
-    "latencia_media_ms": 0.43,
+    "latencia_media_ms": 0.53,
     "falhas": [
       "RAG-002",
       "RAG-003",
@@ -832,7 +832,7 @@
     "hit_at_k": 0.4,
     "doc_hit_at_k": 0.625,
     "mrr": 0.4,
-    "latencia_media_ms": 0.25,
+    "latencia_media_ms": 0.32,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -870,7 +870,7 @@
     "hit_at_k": 0.775,
     "doc_hit_at_k": 0.975,
     "mrr": 0.5792,
-    "latencia_media_ms": 0.24,
+    "latencia_media_ms": 0.3,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -893,7 +893,7 @@
     "hit_at_k": 0.775,
     "doc_hit_at_k": 1.0,
     "mrr": 0.5792,
-    "latencia_media_ms": 0.25,
+    "latencia_media_ms": 0.3,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -916,7 +916,7 @@
     "hit_at_k": 0.5,
     "doc_hit_at_k": 0.775,
     "mrr": 0.5,
-    "latencia_media_ms": 0.44,
+    "latencia_media_ms": 0.54,
     "falhas": [
       "RAG-001",
       "RAG-002",
@@ -950,7 +950,7 @@
     "hit_at_k": 0.8,
     "doc_hit_at_k": 0.975,
     "mrr": 0.6417,
-    "latencia_media_ms": 0.45,
+    "latencia_media_ms": 0.61,
     "falhas": [
       "RAG-002",
       "RAG-004",
@@ -972,7 +972,7 @@
     "hit_at_k": 0.825,
     "doc_hit_at_k": 1.0,
     "mrr": 0.6479,
-    "latencia_media_ms": 0.44,
+    "latencia_media_ms": 0.54,
     "falhas": [
       "RAG-002",
       "RAG-004",

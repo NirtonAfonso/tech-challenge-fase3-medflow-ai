@@ -281,7 +281,7 @@ Grade completa: [`artifacts/rag/rag_experiments.csv`](artifacts/rag/rag_experime
 | Conjunto | Papel | Acurácia | Subestimações de risco |
 |---|---|---|---|
 | `safety_benchmark` (48) | desenvolvimento (as regras foram ajustadas nele) | 1,000 | **0** |
-| `safety_holdout_v1` (32) | held-out, congelado antes das correções | 0,9375 → 1,000 | **0** |
+| `safety_holdout_v1` (32) | held-out; medição **congelada** antes das correções que ela motivou | 0,9375 (hoje 1,000) | 2 → **0** |
 | `safety_holdout_v2` (32) | held-out, **nunca usado para ajustar regras** | **0,9688** | **0** |
 
 A melhor estimativa **não enviesada** de generalização é **96,88%** (`holdout_v2`), com **zero

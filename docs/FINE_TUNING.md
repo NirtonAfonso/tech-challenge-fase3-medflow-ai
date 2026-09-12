@@ -36,7 +36,7 @@ RAG, não do gerador.
 |---|---|---|
 | Método | **QLoRA** — base congelada em 4-bit NF4 + adaptadores LoRA treináveis | full fine-tuning de 3B não cabe em T4 (16 GB); QLoRA treina ~0,5% dos parâmetros |
 | Quantização | NF4, *double quant*, compute em bfloat16 | padrão do QLoRA; NF4 preserva melhor a distribuição dos pesos que INT4 uniforme |
-| Modelo base | instruct de ~3B: `Qwen/Qwen2.5-3B-Instruct` (principal), `meta-llama/Llama-3.2-3B-Instruct` (fallback) | licença permissiva, *chat template* nativo, multilíngue com bom português, cabe em T4 |
+| Modelo base | instruct de ~3B: **`Qwen/Qwen2.5-3B-Instruct`** | **não gated** (sem aceite de licença nem token), *chat template* nativo, multilíngue com bom português, cabe em T4 |
 | LoRA | `r=16`, `alpha=32`, `dropout=0.05` | razão α/r = 2, ponto de partida consolidado para SFT |
 | Módulos alvo | todas as projeções de atenção e MLP (`q,k,v,o,gate,up,down`) | adaptar só atenção limita a mudança de estilo de geração |
 | Épocas | 3 | dataset pequeno; mais épocas tendem a decorar |
@@ -204,6 +204,6 @@ python -m medflow_ai.cli ask "Quando repetir o TSH deste paciente?" --patient-id
 |---|---|
 | runtime reiniciado no meio do treino | `save_strategy="epoch"`, `save_total_limit=2` |
 | GPU indisponível | célula de diagnóstico interrompe com mensagem acionável |
-| modelo *gated* no Hugging Face | `fallback_model_id` na configuração; `HUGGINGFACE_TOKEN` no `.env` |
+| modelo *gated* no Hugging Face | o modelo padrão é não gated, então o token é opcional; se você trocar `base_model_id` por um modelo gated, informe `HUGGINGFACE_TOKEN`. **Não existe fallback automático de modelo**: uma falha de download interrompe a execução em vez de trocar o modelo silenciosamente por baixo do relatório. |
 | OOM em T4 | `gradient_checkpointing`, batch 2, `paged_adamw_8bit`, `max_seq_length=1024` |
 | divergência notebook × repositório | o notebook **chama** `train()` do pacote, não reimplementa |

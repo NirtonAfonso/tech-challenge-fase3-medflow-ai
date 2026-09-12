@@ -381,7 +381,7 @@ O que os testes cobrem:
 | Item | Escolha | Por quê |
 |---|---|---|
 | Método | **QLoRA** (4-bit NF4 + LoRA r=16, α=32) | cabe em GPU T4 do Colab gratuito |
-| Modelo base | modelo instruct ~3B (`Qwen/Qwen2.5-3B-Instruct`, fallback Llama 3.2 3B Instruct) | licença permissiva, *chat template*, suporte a 4-bit |
+| Modelo base | `Qwen/Qwen2.5-3B-Instruct` (~3B, instruct) | **não gated**: sem aceite de licença nem token; *chat template* nativo e suporte a 4-bit. Sem fallback automático de modelo. |
 | Épocas / LR | 3 / 2e-4, cosine, warmup 3% | ponto de partida padrão para SFT com LoRA |
 | Batch efetivo | 2 × 8 = 16 | batch pequeno + acumulação, com gradient checkpointing |
 | Seed | 42 (registrada em `training_config.json`) | reprodutibilidade |

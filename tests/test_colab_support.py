@@ -333,3 +333,14 @@ def test_cli_inspeciona_bundle(artefatos_completos, tmp_path, capsys) -> None:
     relatorio = build_results_bundle(artefatos_completos, tmp_path / "bundles")
     assert main(["inspect-bundle", str(relatorio.caminho)]) == 0
     assert "Seguro para compartilhar" in capsys.readouterr().out
+
+
+def test_persistencia_e_idempotente_quando_origem_ja_esta_no_destino(tmp_path) -> None:
+    """Regressão: em execução local o artefato já nasce na pasta de saída."""
+    destino = tmp_path / "drive"; destino.mkdir()
+    arquivo = destino / "relatorio.json"
+    arquivo.write_text('{"a": 1}', encoding="utf-8")
+
+    relatorio = persist([arquivo], destino)
+    assert relatorio.copiados == [arquivo]
+    assert arquivo.read_text(encoding="utf-8") == '{"a": 1}'

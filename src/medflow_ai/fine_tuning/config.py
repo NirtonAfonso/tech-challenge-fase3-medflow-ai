@@ -27,9 +27,12 @@ class QLoRAConfig:
     gratuito do Google Colab).
     """
 
-    # Modelo base
+    # Modelo base. Qwen2.5-3B-Instruct é **não gated** no Hugging Face: não exige
+    # aceite de licença nem token, o que evita travar a execução no Colab.
+    # Não há fallback automático de modelo — se o download falhar, a execução
+    # para com o erro real em vez de trocar o modelo por baixo do relatório.
+    # Para experimentar outro modelo, altere base_model_id explicitamente.
     base_model_id: str = "Qwen/Qwen2.5-3B-Instruct"
-    fallback_model_id: str = "meta-llama/Llama-3.2-3B-Instruct"
     trust_remote_code: bool = False
 
     # Quantização (QLoRA).

@@ -311,14 +311,18 @@ def persist(
                 relativo = arquivo.relative_to(caminho)
                 final = sub_destino / relativo
                 final.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(arquivo, final)
+                if arquivo.resolve() != final.resolve():
+                    shutil.copy2(arquivo, final)
                 relatorio.copiados.append(final)
         else:
             if not allow_weights and caminho.suffix.lower() in WEIGHT_SUFFIXES:
                 relatorio.ignorados.append(caminho.name)
                 continue
             final = alvo / caminho.name
-            shutil.copy2(caminho, final)
+            # Em execução local o artefato pode já ter sido escrito no destino;
+            # copiar sobre si mesmo levanta SameFileError.
+            if caminho.resolve() != final.resolve():
+                shutil.copy2(caminho, final)
             relatorio.copiados.append(final)
 
     return relatorio

@@ -1,0 +1,11 @@
+# ---------------------------------------------------------------------------
+# Dependências dos notebooks de CPU no Google Colab (01, 03, 04, 05).
+# Nada aqui é assumido como "já vem no Colab": a imagem base muda com o tempo.
+#   pip install -r requirements-colab.txt
+# O notebook 02 (fine-tuning) usa adicionalmente requirements-training.txt.
+# ---------------------------------------------------------------------------
+-r requirements.txt
+
+# Tabelas e gráficos usados nos notebooks
+pandas>=2.2,<4.0
+matplotlib>=3.9,<4.0

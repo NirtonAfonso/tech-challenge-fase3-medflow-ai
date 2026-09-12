@@ -62,3 +62,16 @@ data/processed/vector_store/
 
 # Exports CSV grandes gerados a partir do banco sintético
 data/processed/csv_export/
+
+# ---------------------------------------------------------------------------
+# Material bruto do curso (PDFs de aula da FIAP).
+# Podem conter identificação/marca d'água do aluno e não são artefato do projeto.
+# Documentos autorais do projeto (docs/*.md) e o relatório final em PDF continuam
+# versionáveis — a regra bloqueia apenas a pasta de material bruto.
+# ---------------------------------------------------------------------------
+docs/Fase 3 - Generative AI/
+docs/Fase*Generative*AI/
+docs/aulas/
+docs/material-do-curso/
+**/POSTECH - Aula*.pdf
+**/*Tech challenge*.pdf

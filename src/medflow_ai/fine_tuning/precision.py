@@ -65,27 +65,45 @@ class PrecisionPolicy:
         )
 
 
+_SEM_GPU: dict[str, Any] = {
+    "cuda_available": False,
+    "gpu_name": "n/d",
+    "gpu_memory_gb": 0.0,
+    "compute_capability": "n/d",
+    "bf16_supported": False,
+}
+
+
 def describe_gpu() -> dict[str, Any]:
-    """Coleta nome, memória e compute capability da GPU, sem falhar se não houver."""
+    """Coleta nome, memória e compute capability da GPU, sem nunca levantar exceção.
+
+    A detecção precisa tolerar mais do que "torch ausente": uma instalação
+    parcial ou quebrada deixa o módulo importável sem ``torch.cuda``, e uma
+    build só-CPU pode não expor ``is_bf16_supported``. Em qualquer desses casos
+    a resposta correta é "sem GPU" — o treino é recusado logo depois —, e não
+    derrubar o diagnóstico que existe justamente para explicar o problema.
+    """
     try:
         import torch
-    except ImportError:
-        return {"cuda_available": False, "gpu_name": "n/d", "gpu_memory_gb": 0.0,
-                "compute_capability": "n/d", "bf16_supported": False}
+    except Exception:  # noqa: BLE001 - torch ausente ou com import quebrado
+        return dict(_SEM_GPU)
 
-    if not torch.cuda.is_available():
-        return {"cuda_available": False, "gpu_name": "n/d", "gpu_memory_gb": 0.0,
-                "compute_capability": "n/d", "bf16_supported": False}
+    try:
+        if not torch.cuda.is_available():
+            return dict(_SEM_GPU)
+        properties = torch.cuda.get_device_properties(0)
+        nome = torch.cuda.get_device_name(0)
+    except Exception:  # noqa: BLE001 - torch sem atributo cuda, driver ausente, etc.
+        return dict(_SEM_GPU)
 
-    properties = torch.cuda.get_device_properties(0)
     try:
         bf16_supported = bool(torch.cuda.is_bf16_supported())
     except Exception:  # noqa: BLE001 - build de torch sem a checagem
-        bf16_supported = properties.major >= 8
+        bf16_supported = getattr(properties, "major", 0) >= 8
 
     return {
         "cuda_available": True,
-        "gpu_name": torch.cuda.get_device_name(0),
+        "gpu_name": nome,
         "gpu_memory_gb": round(properties.total_memory / (1024**3), 2),
         "compute_capability": f"{properties.major}.{properties.minor}",
         "bf16_supported": bf16_supported,

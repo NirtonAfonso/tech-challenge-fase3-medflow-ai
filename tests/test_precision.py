@@ -132,3 +132,36 @@ def test_policy_e_imutavel() -> None:
     assert isinstance(politica, PrecisionPolicy)
     with pytest.raises(Exception):
         politica.bf16 = True  # type: ignore[misc]
+
+
+def test_deteccao_tolera_torch_quebrado(monkeypatch) -> None:
+    """Regressão: uma instalação parcial deixa `torch` importável sem `torch.cuda`.
+
+    Aconteceu de verdade após um `pip uninstall torch`: o diagnóstico quebrava
+    com AttributeError justamente quando deveria explicar o problema.
+    """
+    import sys
+    import types
+
+    torch_quebrado = types.ModuleType("torch")  # sem atributo `cuda`
+    monkeypatch.setitem(sys.modules, "torch", torch_quebrado)
+
+    info = describe_gpu()
+    assert info["cuda_available"] is False
+    politica = resolve_precision()
+    assert politica.trainable is False
+    assert politica.compute_dtype_name == "float32"
+
+
+def test_deteccao_tolera_torch_ausente(monkeypatch) -> None:
+    import builtins
+
+    real_import = builtins.__import__
+
+    def sem_torch(nome, *args, **kwargs):
+        if nome == "torch":
+            raise ImportError("simulado")
+        return real_import(nome, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", sem_torch)
+    assert describe_gpu()["cuda_available"] is False

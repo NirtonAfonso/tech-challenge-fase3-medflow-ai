@@ -4,7 +4,7 @@
 
 [![tests](https://github.com/NirtonAfonso/tech-challenge-fase3-medflow-ai/actions/workflows/tests.yml/badge.svg?branch=develop)](https://github.com/NirtonAfonso/tech-challenge-fase3-medflow-ai/actions/workflows/tests.yml)
 ![python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
-![testes](https://img.shields.io/badge/testes-176%20passando-brightgreen)
+![testes](https://img.shields.io/badge/testes-338%20passando-brightgreen)
 ![cobertura](https://img.shields.io/badge/cobertura-89%25-brightgreen)
 
 > ⚠️ **Projeto acadêmico e experimental.** O MedFlow AI é **assistivo**: apoia o médico, não decide por
@@ -16,7 +16,7 @@
 ## Índice
 
 1. [O que é](#1-o-que-é)
-2. [Arquitetura](#2-arquitetura)
+2. [Arquitetura](#2-arquitetura) · [2.1 Dois modos de execução](#21-dois-modos-de-execução--e-a-diferença-importa)
 3. [Como rodar em 3 comandos](#3-como-rodar-em-3-comandos)
 4. [Exemplos de entrada e saída](#4-exemplos-de-entrada-e-saída)
 5. [Resultados medidos](#5-resultados-medidos)
@@ -94,9 +94,46 @@ Detalhes em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ---
 
+## 2.1 Dois modos de execução — e a diferença importa
+
+O assistente roda com provedores de LLM intercambiáveis. **Os dois modos existem por razões
+diferentes, e confundi-los invalidaria a entrega.**
+
+| Modo | Provedor | Para que serve | Precisa de GPU? |
+|---|---|---|---|
+| **Offline / CI** | `template` | testes, smoke, e as **métricas determinísticas** de RAG, prontuário, segurança e grafo | não |
+| **Final / submissão** | `hf_local` + adapter QLoRA | **demonstração oficial** da LLM customizada, para o vídeo e a entrega | sim |
+
+O que isso significa na prática:
+
+- ✅ **São resultados reais** todos os números de RAG, prontuário estruturado, política de segurança e
+  roteamento do grafo (§5.1 a §5.4). Eles não dependem da LLM e foram medidos por execução.
+- ⏳ **Ainda são pendentes** os resultados do modelo fine-tuned (§5.6). O treino não foi executado.
+- ⚠️ **As saídas de texto mostradas na §4 vêm do provedor `template`**, um baseline extrativo
+  determinístico — **não** são output da LLM fine-tuned. Estão aqui para demonstrar o fluxo, as fontes
+  e os guardrails, que são idênticos nos dois modos.
+
+Para rodar no modo final, depois de treinar no Colab:
+
+```bash
+export MEDFLOW_LLM_PROVIDER=hf_local
+export MEDFLOW_ADAPTER_PATH=/caminho/para/adapter
+python -m medflow_ai.cli ask "..." --patient-id P-DEMO-0001
+```
+
+> O sistema **nunca** cai silenciosamente de `hf_local` para `template`: sem o adapter no caminho
+> informado, ele falha com `FileNotFoundError`. O notebook 05 em modo submissão faz a mesma checagem
+> antes de começar.
+
+---
+
 ## 3. Como rodar em 3 comandos
 
 Requisitos: **Python 3.11+**. Não é necessária GPU nem chave de API para executar o assistente.
+
+> 🚀 **Prefere não instalar nada?** Os cinco notebooks abrem direto no Google Colab, com bootstrap
+> automático e persistência no Drive. Veja [`notebooks/README.md`](notebooks/README.md) e o guia passo
+> a passo em [`docs/COLAB_RUNBOOK.md`](docs/COLAB_RUNBOOK.md).
 
 ```bash
 git clone https://github.com/NirtonAfonso/tech-challenge-fase3-medflow-ai.git
@@ -132,6 +169,8 @@ python -m medflow_ai.cli evaluate --with-generation
 | `evaluate [--with-generation]` | RAG, segurança, prontuário, grafo e ablação de geração |
 | `logs [--limit N]` | últimos eventos da trilha de auditoria |
 | `graph [--output ARQ]` | diagrama Mermaid do grafo real |
+| `validate-colab-results [DIR]` | valida os artefatos de fine-tuning devolvidos pelo Colab |
+| `inspect-bundle ARQ.zip` | confere que o bundle não carrega pesos, tokens ou `.env` |
 
 ---
 
@@ -327,7 +366,9 @@ divisão de responsabilidades adotada.
 | Loss de treino, base × fine-tuned | ⏳ **pendente de execução em GPU** (`notebooks/02_fine_tuning_qlora.ipynb`) |
 
 O notebook está completo e pronto; enquanto não for executado em GPU, **nenhum número de
-fine-tuning aparece neste README ou no relatório**. Ver [seção 7](#7-fine-tuning-google-colab).
+fine-tuning aparece neste README ou no relatório**. O passo a passo está em
+[`docs/COLAB_RUNBOOK.md`](docs/COLAB_RUNBOOK.md); depois de rodar, valide com
+`python -m medflow_ai.cli validate-colab-results artifacts/fine_tuning` antes de citar qualquer número.
 
 ---
 
@@ -337,7 +378,7 @@ fine-tuning aparece neste README ou no relatório**. Ver [seção 7](#7-fine-tun
 pip install -r requirements.txt
 pip install -e ".[dev]"
 
-pytest                                   # 176 testes
+pytest                                   # 338 testes
 pytest --cov --cov-report=term-missing   # com cobertura (89%)
 pytest tests/test_safety.py -v           # só a política de segurança
 ```
@@ -348,7 +389,7 @@ Saída esperada:
 ........................................................................ [ 40%]
 ........................................................................ [ 81%]
 ................................                                         [100%]
-176 passed
+338 passed
 ```
 
 A CI ([`.github/workflows/tests.yml`](.github/workflows/tests.yml)) roda em Python 3.11 e 3.12 e, além
@@ -371,6 +412,11 @@ O que os testes cobrem:
 | `test_evaluation.py` | validade do gabarito e critério "zero subestimação de risco" |
 | `test_cli.py` | todos os comandos, incluindo bloqueio e uso do prontuário |
 | `test_training_env.py` | recusa de produzir métricas sem GPU |
+| `test_precision.py` | seleção FP16/BF16 com T4, V100, A100, L4 e CPU injetados |
+| `test_dataset_invariance.py` | dataset SFT idêntico com 0, 8 e 40 pacientes no banco |
+| `test_colab_support.py` | Drive, política de segredos, bundle e validador |
+| `test_notebooks_readiness.py` | JSON, bootstrap, branch do clone, deps e modo fine-tuned |
+| `test_docs_consistency.py` | docs e manifesto não podem divergir |
 
 ---
 
@@ -611,21 +657,26 @@ Copie `.env.example` para `.env`. **Nenhuma chave é necessária** para o modo p
 │   ├── processed/sft/               dataset SFT + manifesto de splits
 │   ├── raw/                         (ignorado) PDFs externos opcionais
 │   └── synthetic/protocols/         15 documentos institucionais sintéticos
-├── docs/                            arquitetura, decisões, relatório, roteiro do vídeo
+├── docs/                            arquitetura, decisões, relatório, runbook do Colab,
+│                                    política de segurança, roteiro do vídeo
 ├── notebooks/                       01 dados · 02 fine-tuning · 03 RAG · 04 prontuário · 05 demo
+├── requirements-colab.txt           dependências dos notebooks de CPU no Colab
+├── requirements-training.txt        dependências de GPU (fine-tuning)
 ├── src/medflow_ai/
-│   ├── cli.py                       interface de linha de comando
+│   ├── cli.py                       interface de linha de comando (11 comandos)
+│   ├── colab.py                     Drive, persistência e metadados de execução
 │   ├── config.py                    configuração central por ambiente
 │   ├── data/                        anonimização, curadoria, corpus
 │   ├── database/                    esquema, gerador, ingestão, repositório
 │   ├── evaluation/                  rag_eval, safety_eval, database_eval, graph_eval
-│   ├── fine_tuning/                 config QLoRA, dataset, treino, avaliação
+│   ├── fine_tuning/                 config QLoRA, precisão, dataset, treino, avaliação,
+│   │                                bundle de resultados e validador do Colab
 │   ├── graph/                       state, nodes, tools, build (LangGraph)
 │   ├── llm/                         prompts versionados e provedores
 │   ├── logging_utils/               trilha de auditoria com redação
 │   ├── rag/                         loaders, chunking, embeddings, store, retriever
 │   └── safety/                      política clínica e guardrails
-└── tests/                           176 testes (89% de cobertura)
+└── tests/                           338 testes (89% de cobertura)
 ```
 
 ---
@@ -677,6 +728,7 @@ Declaradas explicitamente, com o que seria necessário para superá-las:
 | Dataset anonimizado / sintético | `data/synthetic/`, `data/processed/sft/` | §12 |
 | Avaliação do modelo e análise | `evaluation/` | §5; `artifacts/` |
 | Testes automatizados + CI | `tests/`, GitHub Actions | §6 |
+| Notebooks executáveis no Colab | `notebooks/`, `src/medflow_ai/colab.py` | §3.1; [`docs/COLAB_RUNBOOK.md`](docs/COLAB_RUNBOOK.md) |
 
 ---
 

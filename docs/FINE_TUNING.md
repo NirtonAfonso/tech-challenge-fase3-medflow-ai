@@ -35,7 +35,8 @@ RAG, não do gerador.
 | Item | Escolha | Justificativa |
 |---|---|---|
 | Método | **QLoRA** — base congelada em 4-bit NF4 + adaptadores LoRA treináveis | full fine-tuning de 3B não cabe em T4 (16 GB); QLoRA treina ~0,5% dos parâmetros |
-| Quantização | NF4, *double quant*, compute em bfloat16 | padrão do QLoRA; NF4 preserva melhor a distribuição dos pesos que INT4 uniforme |
+| Quantização | NF4, *double quant*, compute dtype **decidido pelo hardware** | padrão do QLoRA; NF4 preserva melhor a distribuição dos pesos que INT4 uniforme |
+| Precisão | **FP16 na T4/V100 · BF16 em Ampere ou mais nova** | ver §2.1 — a T4 recomendada pelo projeto **não suporta** bfloat16 |
 | Modelo base | instruct de ~3B: **`Qwen/Qwen2.5-3B-Instruct`** | **não gated** (sem aceite de licença nem token), *chat template* nativo, multilíngue com bom português, cabe em T4 |
 | LoRA | `r=16`, `alpha=32`, `dropout=0.05` | razão α/r = 2, ponto de partida consolidado para SFT |
 | Módulos alvo | todas as projeções de atenção e MLP (`q,k,v,o,gate,up,down`) | adaptar só atenção limita a mudança de estilo de geração |
@@ -46,6 +47,37 @@ RAG, não do gerador.
 | Gradient checkpointing | ativado | troca ~30% de tempo por memória — necessário em T4 |
 | Otimizador | `paged_adamw_8bit` | evita pico de memória do otimizador |
 | Seed | 42, gravada em `training_config.json` | reprodutibilidade |
+
+### 2.1 Precisão: por que não pode ser BF16 fixo
+
+A T4 do Colab gratuito é Turing (compute capability 7.5) e **não suporta bfloat16**. Fixar `bf16=True`
+faria o treino falhar exatamente no hardware que este projeto recomenda — foi um defeito real,
+corrigido em `fine_tuning/precision.py`.
+
+A política é única e reutilizada pelo trainer, pelo provedor de inferência e pelo notebook 02:
+
+| Hardware | `compute_dtype` | Flags do Trainer |
+|---|---|---|
+| T4, V100 (cc < 8.0) | `float16` | `fp16=True`, `bf16=False` |
+| A100, L4, H100 (cc ≥ 8.0) | `bfloat16` | `bf16=True`, `fp16=False` |
+| sem GPU | `float32` | treino **recusado** |
+
+```python
+from medflow_ai.fine_tuning.config import QLoRAConfig
+
+config = QLoRAConfig()                 # precision="auto" — decide pelo hardware
+politica = config.resolve_precision()
+print(politica.explain())
+# GPU Tesla T4 (14.7 GB, compute capability 7.5) — BF16 NÃO suportado;
+# usando float16 (bf16=False, fp16=True).
+```
+
+Para forçar em um experimento controlado, use `QLoRAConfig(precision="fp16")` ou `"bf16"`; forçar
+`bf16` em GPU sem suporte falha cedo, com a mensagem do porquê. `check_environment()` reporta nome da
+GPU, VRAM, compute capability, suporte a BF16 e o dtype escolhido.
+
+**Trade-off assumido.** FP16 tem faixa dinâmica menor que BF16 e exige escalonamento de gradiente
+(o `Trainer` cuida disso). Em troca, o treino roda na GPU gratuita.
 
 ### Por que não…
 
@@ -97,11 +129,26 @@ ordem de custo-benefício:
 
 ## 4. Execução
 
-```bash
-# 1. Abra notebooks/02_fine_tuning_qlora.ipynb no Google Colab
-# 2. Ambiente de execução → Alterar o tipo de ambiente → GPU (T4 basta)
-# 3. Execute as células em ordem
-```
+O caminho recomendado é o Google Colab, com passo a passo em
+[`COLAB_RUNBOOK.md`](COLAB_RUNBOOK.md) §Notebook 02.
+
+1. abra `notebooks/02_fine_tuning_qlora.ipynb` pelo badge do Colab (branch `develop`);
+2. `Ambiente de execução` → `Alterar o tipo de ambiente de execução` → **GPU** → `Salvar`;
+3. `Executar tudo`.
+
+O notebook monta o Google Drive automaticamente e persiste tudo em
+`/content/drive/MyDrive/MedFlowAI_Fase3/02_fine_tuning/`:
+
+| Subpasta | Conteúdo |
+|---|---|
+| `adapter/` | adapter LoRA + tokenizer — **é o que o notebook 05 carrega** |
+| `checkpoints/` | checkpoints do Trainer |
+| `artifacts/` | métricas, curva de perda, comparações, ambiente |
+| `bundles/` | `medflow_colab_results.zip` — o pacote a devolver |
+| `logs/` | logs da execução |
+
+O `/content` do Colab é apagado ao encerrar a sessão: **a execução só está concluída quando os
+arquivos estão no Drive**, e o notebook imprime a lista do que persistiu.
 
 Ou por linha de comando, em máquina com GPU:
 
@@ -176,17 +223,30 @@ análise do porquê. É exatamente o que já aconteceu com o MMR na avaliação 
 
 ## 7. Checklist pós-execução
 
-Depois de rodar o notebook 02 em GPU:
+O próprio notebook faz as três primeiras verificações; as demais são suas.
 
-- [ ] `artifacts/fine_tuning/training_results.json` com `status: "ok"` e loss real
-- [ ] `artifacts/fine_tuning/loss_curve.png`
-- [ ] `artifacts/fine_tuning/comparacao_sistemas.json` (base × fine-tuned × fine-tuned+RAG)
-- [ ] `artifacts/fine_tuning/respostas_antes_depois.json` (evidência qualitativa)
-- [ ] adapter salvo no Google Drive ou Hugging Face Hub — **nunca** commitado no Git
-- [ ] versões efetivas das bibliotecas (célula 2 do notebook) coladas em `docs/REPORT.md`
-- [ ] tabela comparativa e discussão crítica (5 perguntas) em `docs/REPORT.md` §6 e §14
+- [ ] o notebook imprimiu `RESULTADO: VÁLIDO` (validador automático)
+- [ ] o notebook imprimiu `Seguro: True` (auditoria do ZIP)
+- [ ] adapter em `MedFlowAI_Fase3/02_fine_tuning/adapter/`
+- [ ] `training_results.json` com `status: "ok"`, loss real, commit, GPU e dtype
+- [ ] `loss_curve.png`, `comparacao_sistemas.json`, `respostas_antes_depois.json`, `environment.json`
+- [ ] `medflow_colab_results.zip` em `MedFlowAI_Fase3/02_fine_tuning/bundles/`
+- [ ] revalidado localmente:
+
+  ```bash
+  unzip medflow_colab_results.zip -d artifacts/fine_tuning
+  python -m medflow_ai.cli validate-colab-results artifacts/fine_tuning
+  python -m medflow_ai.cli inspect-bundle medflow_colab_results.zip
+  ```
+
 - [ ] `README.md` §5.6 atualizado: trocar "pendente de execução" pelos números reais
-- [ ] `docs/REQUIREMENTS_CHECKLIST.md`: marcar os itens de fine-tuning
+- [ ] `docs/REPORT.md` §6.3 e §14.6 preenchidos, com a discussão das 5 perguntas
+- [ ] versões efetivas das bibliotecas (de `environment.json`) registradas no relatório
+- [ ] `docs/REQUIREMENTS_CHECKLIST.md`: itens de fine-tuning de ⏳ para ✅
+- [ ] notebook 05 reexecutado em **modo submissão** para a demonstração do vídeo
+
+> **Nunca** commite adapter, checkpoints ou pesos. O ZIP de resultados recusa esses arquivos por
+> construção, e o validador reprova se algum peso aparecer em `artifacts/`.
 
 Para usar o adapter no assistente:
 
@@ -205,5 +265,7 @@ python -m medflow_ai.cli ask "Quando repetir o TSH deste paciente?" --patient-id
 | runtime reiniciado no meio do treino | `save_strategy="epoch"`, `save_total_limit=2` |
 | GPU indisponível | célula de diagnóstico interrompe com mensagem acionável |
 | modelo *gated* no Hugging Face | o modelo padrão é não gated, então o token é opcional; se você trocar `base_model_id` por um modelo gated, informe `HUGGINGFACE_TOKEN`. **Não existe fallback automático de modelo**: uma falha de download interrompe a execução em vez de trocar o modelo silenciosamente por baixo do relatório. |
-| OOM em T4 | `gradient_checkpointing`, batch 2, `paged_adamw_8bit`, `max_seq_length=1024` |
+| OOM em T4 | `gradient_checkpointing`, batch 2, `paged_adamw_8bit`, `max_seq_length=1024`; o notebook oferece uma configuração de recuperação (batch 1, seq 768) e **registra em `training_results.json` a configuração efetivamente usada** |
+| BF16 em GPU sem suporte | política de precisão decide pelo hardware; forçar `bf16` na T4 falha cedo com mensagem clara |
+| Perder resultados ao encerrar a sessão | tudo é persistido no Google Drive; o notebook imprime os caminhos e avisa se o mount falhar |
 | divergência notebook × repositório | o notebook **chama** `train()` do pacote, não reimplementa |

@@ -88,7 +88,7 @@ def _version(module_name: str) -> tuple[str, bool]:
     try:
         module = __import__(module_name)
         return getattr(module, "__version__", "desconhecida"), True
-    except ImportError:
+    except Exception:  # noqa: BLE001 - pacote ausente ou com import quebrado
         return "ausente", False
 
 
@@ -163,7 +163,7 @@ def set_seed(seed: int) -> None:
         torch.manual_seed(seed)
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
-    except ImportError:  # pragma: no cover
+    except Exception:  # noqa: BLE001 - torch ausente ou com instalação quebrada
         pass
 
 

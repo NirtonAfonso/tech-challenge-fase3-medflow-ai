@@ -26,11 +26,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Instalar dependências
+      # Nada de torch, bitsandbytes ou dependência de GPU na CI: o pipeline de
+      # treino é exercitado apenas no caminho que recusa treinar sem GPU.
+      - name: Instalar dependências (somente CPU)
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e .
+          pip install -e ".[dev]"
 
       - name: Verificar que o pipeline reproduz do zero
         run: |
@@ -54,3 +56,80 @@ jobs:
             artifacts/**/*.csv
             artifacts/**/*.txt
           if-no-files-found: warn
+
+  reprodutibilidade:
+    name: Reprodutibilidade e higiene do repositório
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e ".[dev]"
+
+      # O JSONL versionado precisa ser byte a byte o que o pipeline gera hoje.
+      - name: Dataset versionado == dataset reproduzido
+        run: |
+          mkdir -p /tmp/sft_ref && cp data/processed/sft/*.jsonl /tmp/sft_ref/
+          python -m medflow_ai.cli build-dataset
+          for arquivo in train validation test; do
+            diff -q "/tmp/sft_ref/$arquivo.jsonl" "data/processed/sft/$arquivo.jsonl" \
+              || { echo "::error::$arquivo.jsonl versionado difere do reproduzido"; exit 1; }
+          done
+          echo "Dataset versionado confere com o reproduzido."
+
+      # O dataset não pode mudar conforme o tamanho do banco já construído.
+      - name: Dataset invariante a bancos de 0, 8 e 40 pacientes
+        run: pytest tests/test_dataset_invariance.py -q
+
+      - name: Prontidão dos notebooks para o Colab
+        run: pytest tests/test_notebooks_readiness.py -q
+
+      - name: Documentação consistente com o manifesto
+        run: pytest tests/test_docs_consistency.py -q
+
+      - name: Material bruto do curso ausente da árvore
+        run: |
+          if [ -d "docs/Fase 3 - Generative AI" ]; then
+            echo "::error::material bruto do curso voltou para a árvore"; exit 1
+          fi
+          encontrados=$(git ls-files | grep -iE "POSTECH - Aula|Fase 3 - Generative AI" || true)
+          if [ -n "$encontrados" ]; then
+            echo "::error::arquivos de aula versionados:"; echo "$encontrados"; exit 1
+          fi
+          echo "Nenhum material bruto do curso versionado."
+
+      # A CI é de CPU: se alguma dependência de GPU entrar por engano, o custo e
+      # o tempo explodem e o ambiente deixa de refletir o que testamos.
+      - name: Nenhuma dependência de GPU instalada na CI
+        run: |
+          if pip list --format=freeze | grep -iE "^(torch|bitsandbytes|nvidia-)" ; then
+            echo "::error::dependência de GPU instalada na CI"; exit 1
+          fi
+          echo "Ambiente de CI livre de dependências de GPU."
+
+      - name: Notebooks são JSON válido e sem saída salva
+        run: |
+          python - <<'PY'
+          import json, pathlib, sys
+          problemas = []
+          for caminho in sorted(pathlib.Path("notebooks").glob("*.ipynb")):
+              nb = json.loads(caminho.read_text(encoding="utf-8"))
+              if nb.get("nbformat") != 4:
+                  problemas.append(f"{caminho.name}: nbformat != 4")
+              for indice, celula in enumerate(nb["cells"]):
+                  if celula["cell_type"] == "code" and celula.get("outputs"):
+                      problemas.append(f"{caminho.name}: célula {indice} com saída salva")
+              print(f"OK {caminho.name} ({len(nb['cells'])} células)")
+          if problemas:
+              print("\n".join(problemas)); sys.exit(1)
+          PY

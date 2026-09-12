@@ -178,9 +178,15 @@ seed, contagens, documentos por split e *fingerprint* de cada exemplo.
 
 ### 6.1 Estratégia
 
-QLoRA (base congelada em 4-bit NF4 + adaptadores LoRA), modelo instruct de ~3B, `r=16`, `alpha=32`,
-3 épocas, LR 2e-4 cosine, batch efetivo 16, `max_seq_length` 1024, gradient checkpointing,
+QLoRA (base congelada em 4-bit NF4 + adaptadores LoRA), `Qwen/Qwen2.5-3B-Instruct` (não gated), `r=16`,
+`alpha=32`, 3 épocas, LR 2e-4 cosine, batch efetivo 16, `max_seq_length` 1024, gradient checkpointing,
 `paged_adamw_8bit`, seed 42. Justificativa item a item em [`FINE_TUNING.md`](FINE_TUNING.md) §2.
+
+**A precisão não é fixa no código.** A T4 do Colab gratuito é Turing (compute capability 7.5) e não
+suporta bfloat16; uma constante `bf16=True` faria o treino falhar exatamente no hardware que o projeto
+recomenda. A política vive em `fine_tuning/precision.py` e é a mesma para trainer, provedor de
+inferência e notebook: **FP16 em T4/V100, BF16 em Ampere ou mais nova, treino recusado sem GPU**. Ver
+§15.7.
 
 ### 6.2 Dataset de treino
 
@@ -196,8 +202,10 @@ Splits: 102 treino / 13 validação / 22 teste.
 > detecta isso, retorna `status: "skipped"` com o motivo e **não escreve arquivo de métrica algum** —
 > comportamento coberto pelo teste `test_treino_sem_gpu_nao_inventa_metricas`.
 >
-> `notebooks/02_fine_tuning_qlora.ipynb` está completo e pronto para execução no Google Colab. O
-> checklist pós-execução está em `FINE_TUNING.md` §7.
+> `notebooks/02_fine_tuning_qlora.ipynb` está completo e pronto para execução no Google Colab, com
+> bootstrap automático, persistência no Google Drive, validação dos próprios artefatos e geração de um
+> bundle de métricas. O passo a passo está em [`COLAB_RUNBOOK.md`](COLAB_RUNBOOK.md) e o checklist
+> pós-execução em [`FINE_TUNING.md`](FINE_TUNING.md) §7.
 
 **A preencher após a execução:** loss de treino/validação, curva de perda, parâmetros treináveis
 (valor absoluto e percentual), tabela base × fine-tuned × fine-tuned+RAG, exemplos antes/depois e
@@ -523,6 +531,43 @@ dominar o ranking e o trecho sobre interação levotiroxina/cálcio saiu do top-
 **Diagnóstico.** Encontrado ao conferir os exemplos do README. Corrigido com fusão por rank (ADR-006).
 **Efeito medido:** citação correta 0,773 → 0,818; groundedness 0,520 → 0,557.
 
+### 15.7 Defeito de precisão: BF16 fixo quebraria a T4 recomendada
+
+`bnb_4bit_compute_dtype="bfloat16"` e `bf16=True` estavam fixos na configuração, enquanto a
+documentação recomendava a T4 do Colab gratuito.
+
+**Diagnóstico.** A T4 é Turing (cc 7.5) e não suporta bfloat16: o treino falharia na primeira execução
+do usuário, no hardware indicado pelo próprio projeto. Um caso clássico de configuração escrita para a
+máquina de quem desenvolve, não para a de quem executa.
+
+**Correção.** Política única em `fine_tuning/precision.py`, consumida pelos três pontos que precisavam
+dela. 19 testes com hardware injetado (T4, V100, A100, L4, CPU, e torch quebrado).
+
+### 15.8 Defeito de reprodutibilidade: o dataset dependia do estado do banco
+
+A família `laudo_preenchido` era gerada lendo o `hospital.db` existente.
+
+**Diagnóstico.** Esse banco é mutável — o usuário pode reconstruí-lo com 8 ou 40 pacientes, e o
+notebook 04 o recria. O mesmo comando produzia datasets diferentes conforme o que tivesse rodado antes,
+invalidando manifesto, fingerprints e split. O defeito só apareceu quando se perguntou "e se o usuário
+rodar os notebooks em outra ordem?".
+
+**Correção.** Fixture canônica gerada em memória com semente própria, mais salt fixo do dataset para o
+pseudônimo que aparece dentro dos exemplos — sem isso, o conteúdo versionado mudaria conforme a
+variável de ambiente da máquina. Teste de invariância com banco ausente, com 8 e com 40 pacientes.
+
+### 15.9 Defeito de robustez: detecção de GPU quebrava com torch parcial
+
+Encontrado ao limpar o ambiente: um `pip uninstall torch` deixou o módulo importável sem
+`torch.cuda`, e `describe_gpu()` — que existe justamente para diagnosticar o ambiente — levantava
+`AttributeError`.
+
+**Diagnóstico.** O guarda cobria apenas `ImportError`. Instalações parciais, wheels quebradas e builds
+só-CPU são comuns o bastante para merecerem tratamento.
+
+**Correção.** Qualquer falha na detecção passa a significar "sem GPU", que é a resposta segura: o treino
+é recusado logo em seguida. Dois testes de regressão.
+
 ---
 
 ## 16. Limitações
@@ -606,14 +651,26 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt && pip install -e ".[dev]"
 
 python -m medflow_ai.cli bootstrap                      # banco + índice + dataset
-pytest --cov                                            # 176 testes, 89%
+pytest --cov                                            # 338 testes, 89%
 python -m medflow_ai.cli evaluate --with-generation     # regenera todas as métricas
 python -m medflow_ai.cli demo                           # 5 cenários
 ```
 
+### Google Colab
+
+Os cinco notebooks abrem direto pelos badges de [`notebooks/README.md`](../notebooks/README.md) e rodam
+em um runtime novo com "Executar tudo": o bootstrap monta o Drive, clona a branch `develop` com
+`--branch` explícita, instala tudo, imprime o commit SHA e cria a árvore de saída em
+`MedFlowAI_Fase3/`. O passo a passo está em [`COLAB_RUNBOOK.md`](COLAB_RUNBOOK.md).
+
+### Garantias
+
 | Garantia | Como |
 |---|---|
 | Determinismo | seed 42 em gerador, splits e embedding; provedor `template` determinístico |
+| Dataset estável | fixture própria do SFT: independe do banco e do salt do ambiente (verificado) |
+| Precisão previsível | decidida pelo hardware, registrada em `training_results.json` |
+| Resultado auditável | `cli validate-colab-results` reprova artefato incompleto ou incoerente |
 | Sem rede | corpus versionado; embedding sem download; nenhuma chave necessária |
 | Versões registradas | `training_config.json`, `POLICY_VERSION`, `PROMPT_VERSION` em cada log |
 | Splits estáveis | manifesto com seed e *fingerprints* |
@@ -633,6 +690,7 @@ python -m medflow_ai.cli demo                           # 5 cenários
 - [`FINE_TUNING.md`](FINE_TUNING.md) — estratégia, configuração, checklist pós-execução
 - [`EVALUATION_PLAN.md`](EVALUATION_PLAN.md) — o que foi medido e o que não foi
 - [`VIDEO_SCRIPT.md`](VIDEO_SCRIPT.md) — roteiro da demonstração
+- [`COLAB_RUNBOOK.md`](COLAB_RUNBOOK.md) — como executar os notebooks no Colab e devolver os artefatos
 
 **Artefatos de resultado** — `artifacts/`: `rag/rag_experiments.{json,csv}`,
 `safety/{safety_report,safety_holdout_v1_pre_fix,safety_holdout_v2_frozen}.json`,

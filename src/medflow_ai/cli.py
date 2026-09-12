@@ -9,6 +9,8 @@ Comandos::
     python -m medflow_ai.cli demo              # roteiro de demonstração completo
     python -m medflow_ai.cli evaluate          # roda todas as avaliações e salva artefatos
     python -m medflow_ai.cli logs --limit 5    # últimos eventos de auditoria
+    python -m medflow_ai.cli validate-colab-results artifacts/fine_tuning
+    python -m medflow_ai.cli inspect-bundle medflow_colab_results.zip
     python -m medflow_ai.cli graph             # imprime o diagrama Mermaid do grafo real
 """
 
@@ -280,6 +282,31 @@ def _run_generation_comparison() -> list[Any]:
     return compare_systems({"template_sem_rag": without_rag, "template_com_rag": with_rag})
 
 
+def cmd_validate_colab_results(args: argparse.Namespace) -> int:
+    """Valida os artefatos devolvidos por uma execução real no Google Colab."""
+    from medflow_ai.fine_tuning.validation import validate_colab_results
+
+    resultado = validate_colab_results(args.directory)
+    print(resultado.render())
+    if args.json:
+        print("\n" + json.dumps(resultado.to_dict(), ensure_ascii=False, indent=2))
+    return 0 if resultado.valido else 1
+
+
+def cmd_inspect_bundle(args: argparse.Namespace) -> int:
+    """Confere que o ZIP de resultados não carrega pesos, tokens ou segredos."""
+    from medflow_ai.fine_tuning.bundle import inspect_bundle
+
+    relatorio = inspect_bundle(args.zipfile)
+    _print_header(f"BUNDLE — {relatorio['caminho']} ({relatorio['tamanho_kb']} KB)")
+    for nome in relatorio["arquivos"]:
+        print(f"  ✔ {nome}")
+    for problema in relatorio["problemas"]:
+        print(f"  ✖ {problema}")
+    print("\nSeguro para compartilhar." if relatorio["seguro"] else "\nNÃO compartilhe este bundle.")
+    return 0 if relatorio["seguro"] else 1
+
+
 def cmd_logs(args: argparse.Namespace) -> int:
     from medflow_ai.logging_utils.audit import AuditLogger
 
@@ -358,6 +385,20 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--with-generation", action="store_true",
                           help="inclui a ablação de geração com e sem RAG")
     evaluate.set_defaults(func=cmd_evaluate)
+
+    validar = subparsers.add_parser(
+        "validate-colab-results",
+        help="valida os artefatos de fine-tuning devolvidos pelo Colab",
+    )
+    validar.add_argument("directory", nargs="?", default="artifacts/fine_tuning")
+    validar.add_argument("--json", action="store_true", help="também imprime o veredito em JSON")
+    validar.set_defaults(func=cmd_validate_colab_results)
+
+    inspecionar = subparsers.add_parser(
+        "inspect-bundle", help="confere o conteúdo do medflow_colab_results.zip"
+    )
+    inspecionar.add_argument("zipfile")
+    inspecionar.set_defaults(func=cmd_inspect_bundle)
 
     logs = subparsers.add_parser("logs", help="mostra eventos de auditoria")
     logs.add_argument("--limit", type=int, default=5)

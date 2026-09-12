@@ -75,3 +75,6 @@ docs/aulas/
 docs/material-do-curso/
 **/POSTECH - Aula*.pdf
 **/*Tech challenge*.pdf
+
+# Saída local equivalente à árvore do Drive (gerada pelos notebooks fora do Colab)
+artifacts/colab/

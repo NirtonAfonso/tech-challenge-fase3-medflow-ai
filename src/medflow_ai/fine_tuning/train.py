@@ -16,10 +16,12 @@ resultado é escrito.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import platform
 import random
 import sys
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -27,7 +29,7 @@ from typing import Any
 
 from medflow_ai.config import get_settings
 from medflow_ai.fine_tuning.config import QLoRAConfig
-from medflow_ai.fine_tuning.precision import PrecisionPolicy, resolve_precision
+from medflow_ai.fine_tuning.precision import PrecisionPolicy, describe_gpu, resolve_precision
 
 __all__ = ["check_environment", "load_splits", "train", "EnvironmentReport", "resolve_precision"]
 
@@ -137,6 +139,13 @@ def check_environment(config: QLoRAConfig | None = None) -> EnvironmentReport:
         python_version=platform.python_version(),
         missing=missing,
     )
+
+
+def _manifest_hash(caminho: Path) -> str:
+    """Hash do manifesto do dataset: liga o treino ao dado exato que o alimentou."""
+    if not caminho.exists():
+        return "ausente"
+    return hashlib.sha256(caminho.read_bytes()).hexdigest()[:16]
 
 
 def set_seed(seed: int) -> None:
@@ -318,6 +327,7 @@ def train(
         processing_class=tokenizer,
     )
 
+    iniciado_em = time.perf_counter()
     train_result = trainer.train()
     metrics: dict[str, Any] = dict(train_result.metrics)
     if "validation" in splits:
@@ -328,20 +338,54 @@ def train(
     tokenizer.save_pretrained(str(adapter_dir))
     cfg.save(target / "training_config.json")
 
+    from medflow_ai.colab import git_info, package_versions
+
+    dataset_manifest = Path(dataset_dir or (settings.project_root / "data" / "processed" / "sft"))
+    manifest_hash = _manifest_hash(dataset_manifest / "manifest.json")
+    repositorio = git_info(settings.project_root)
+
+    # Estrutura consumida por `medflow_ai.cli validate-colab-results`: qualquer
+    # campo ausente ou vazio invalida o resultado, de propósito.
     payload = {
         "status": "ok",
         "executado_em": datetime.now(UTC).isoformat(),
-        "ambiente": environment.to_dict(),
+        "commit": repositorio["commit"],
+        "branch": repositorio["branch"],
+        "seed": cfg.seed,
+        "base_model": cfg.base_model_id,
+        "gpu": describe_gpu(),
+        "compute_dtype": policy.compute_dtype_name,
         "precisao": policy.to_dict(),
+        "ambiente": environment.to_dict(),
+        "versoes": package_versions(
+            ("torch", "transformers", "peft", "trl", "datasets", "accelerate", "bitsandbytes")
+        ),
         "config": cfg.to_dict(),
+        "dataset_manifest_hash": manifest_hash,
         "splits": {name: len(dataset) for name, dataset in splits.items()},
         "parametros": parameter_summary,
         "metricas_treino": metrics,
+        "tempo_total_s": round(time.perf_counter() - iniciado_em, 1),
         "log_history": trainer.state.log_history,
         "adapter_path": str(adapter_dir),
     }
     (target / "training_results.json").write_text(
         json.dumps(payload, ensure_ascii=False, indent=2, default=str), encoding="utf-8"
+    )
+    (target / "environment.json").write_text(
+        json.dumps(
+            {
+                "python": platform.python_version(),
+                "plataforma": platform.platform(),
+                "git": repositorio,
+                "gpu": payload["gpu"],
+                "precisao": policy.to_dict(),
+                "versoes": payload["versoes"],
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
     )
     return payload
 

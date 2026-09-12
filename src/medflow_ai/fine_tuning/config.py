@@ -8,9 +8,12 @@ treinamento executado no Colab seja o mesmo descrito no relatório, e que o
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:  # pragma: no cover
+    from medflow_ai.fine_tuning.precision import PrecisionPolicy
 
 __all__ = ["QLoRAConfig", "DEFAULT_CONFIG"]
 
@@ -29,10 +32,14 @@ class QLoRAConfig:
     fallback_model_id: str = "meta-llama/Llama-3.2-3B-Instruct"
     trust_remote_code: bool = False
 
-    # Quantização (QLoRA)
+    # Quantização (QLoRA).
+    # ``bnb_4bit_compute_dtype = "auto"`` delega a escolha a
+    # ``fine_tuning.precision.resolve_precision()``: bfloat16 quando a GPU
+    # suporta, float16 em T4/V100. Fixar "bfloat16" aqui quebraria o treino na
+    # T4 do Colab gratuito, que é o hardware recomendado pelo projeto.
     load_in_4bit: bool = True
     bnb_4bit_quant_type: str = "nf4"
-    bnb_4bit_compute_dtype: str = "bfloat16"
+    bnb_4bit_compute_dtype: str = "auto"
     bnb_4bit_use_double_quant: bool = True
 
     # LoRA
@@ -57,7 +64,9 @@ class QLoRAConfig:
     optim: str = "paged_adamw_8bit"
     max_seq_length: int = 1024
     gradient_checkpointing: bool = True
-    bf16: bool = True
+    # ``precision = "auto"`` resolve bf16/fp16 pelo hardware. Use "bf16" ou
+    # "fp16" apenas para forçar explicitamente em um experimento controlado.
+    precision: str = "auto"
     logging_steps: int = 5
     eval_strategy: str = "epoch"
     save_strategy: str = "epoch"
@@ -91,6 +100,32 @@ class QLoRAConfig:
     @property
     def effective_batch_size(self) -> int:
         return self.per_device_train_batch_size * self.gradient_accumulation_steps
+
+    def resolve_precision(self, info: dict[str, Any] | None = None) -> "PrecisionPolicy":
+        """Resolve a precisão desta execução, respeitando um override explícito."""
+        from medflow_ai.fine_tuning.precision import resolve_precision as _resolve
+
+        policy = _resolve(info)
+        choice = (self.precision or "auto").strip().lower()
+        if choice == "auto":
+            return policy
+        if choice not in {"bf16", "fp16"}:
+            raise ValueError(
+                f"precision inválida: {self.precision!r}. Use 'auto', 'bf16' ou 'fp16'."
+            )
+        if choice == "bf16" and not policy.bf16_supported:
+            raise ValueError(
+                "precision='bf16' foi forçado, mas a GPU detectada não suporta bfloat16 "
+                f"({policy.gpu_name}, compute capability {policy.compute_capability}). "
+                "Use 'auto' ou 'fp16'."
+            )
+        return replace(
+            policy,
+            compute_dtype_name="bfloat16" if choice == "bf16" else "float16",
+            bf16=choice == "bf16",
+            fp16=choice == "fp16",
+            motivo=f"Precisão forçada por configuração (precision={choice!r}).",
+        )
 
 
 DEFAULT_CONFIG = QLoRAConfig()

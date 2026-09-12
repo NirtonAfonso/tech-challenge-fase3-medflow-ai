@@ -24,6 +24,7 @@ do mesmo grafo.
 from __future__ import annotations
 
 import re
+from pathlib import Path
 from typing import Any, Sequence
 
 import numpy as np
@@ -195,6 +196,7 @@ class HuggingFaceChatModel(BaseChatModel):
     temperature: float = 0.2
     load_in_4bit: bool = True
     _pipeline: Any = None
+    _precision: Any = None
 
     model_config = {"arbitrary_types_allowed": True, "extra": "allow"}
 
@@ -204,7 +206,21 @@ class HuggingFaceChatModel(BaseChatModel):
 
     @property
     def provider_name(self) -> str:
-        return f"hf_local:{self.model_id}" + (f"+adapter" if self.adapter_path else "")
+        suffix = f"+adapter:{Path(self.adapter_path).name}" if self.adapter_path else "+base"
+        return f"hf_local:{self.model_id}{suffix}"
+
+    def describe(self) -> dict[str, Any]:
+        """Descrição auditável do que está efetivamente carregado."""
+        precision = getattr(self, "_precision", None)
+        return {
+            "provider": "hf_local",
+            "base_model": self.model_id,
+            "adapter_path": self.adapter_path or None,
+            "adapter_carregado": bool(self.adapter_path),
+            "precisao": precision.to_dict() if precision else None,
+            "max_new_tokens": self.max_new_tokens,
+            "temperature": self.temperature,
+        }
 
     def _ensure_pipeline(self) -> Any:
         if self._pipeline is not None:
@@ -218,6 +234,12 @@ class HuggingFaceChatModel(BaseChatModel):
                 "Instale com: pip install -r requirements-training.txt"
             ) from exc
 
+        from medflow_ai.fine_tuning.precision import resolve_precision
+
+        # Mesma política do treino: bfloat16 só onde a GPU suporta; T4 usa float16.
+        policy = resolve_precision()
+        self._precision = policy
+
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)
         model_kwargs: dict[str, Any] = {"dtype": "auto", "device_map": "auto"}
         if self.load_in_4bit and torch.cuda.is_available():
@@ -227,7 +249,7 @@ class HuggingFaceChatModel(BaseChatModel):
                 model_kwargs["quantization_config"] = BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_quant_type="nf4",
-                    bnb_4bit_compute_dtype=torch.bfloat16,
+                    bnb_4bit_compute_dtype=policy.torch_dtype(),
                     bnb_4bit_use_double_quant=True,
                 )
             except ImportError:  # pragma: no cover - bitsandbytes ausente
@@ -237,7 +259,14 @@ class HuggingFaceChatModel(BaseChatModel):
         if self.adapter_path:
             from peft import PeftModel
 
-            model = PeftModel.from_pretrained(model, self.adapter_path)
+            adapter = Path(self.adapter_path)
+            if not adapter.exists():
+                raise FileNotFoundError(
+                    f"Adapter não encontrado em {adapter}. Verifique MEDFLOW_ADAPTER_PATH "
+                    "ou o caminho passado a get_chat_model('hf_local', adapter_path=...). "
+                    "O sistema NÃO cai silenciosamente para o baseline 'template'."
+                )
+            model = PeftModel.from_pretrained(model, str(adapter))
         model.eval()
         self._pipeline = (tokenizer, model)
         return self._pipeline

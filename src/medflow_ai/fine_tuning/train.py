@@ -27,8 +27,9 @@ from typing import Any
 
 from medflow_ai.config import get_settings
 from medflow_ai.fine_tuning.config import QLoRAConfig
+from medflow_ai.fine_tuning.precision import PrecisionPolicy, resolve_precision
 
-__all__ = ["check_environment", "load_splits", "train", "EnvironmentReport"]
+__all__ = ["check_environment", "load_splits", "train", "EnvironmentReport", "resolve_precision"]
 
 
 @dataclass
@@ -38,6 +39,11 @@ class EnvironmentReport:
     gpu_available: bool
     gpu_name: str
     gpu_memory_gb: float
+    compute_capability: str
+    bf16_supported: bool
+    compute_dtype: str
+    bf16: bool
+    fp16: bool
     torch_version: str
     transformers_version: str
     peft_version: str
@@ -56,7 +62,10 @@ class EnvironmentReport:
     def explain(self) -> str:
         if self.ready:
             return (
-                f"Ambiente pronto: GPU {self.gpu_name} ({self.gpu_memory_gb:.1f} GB), "
+                f"Ambiente pronto: GPU {self.gpu_name} ({self.gpu_memory_gb:.1f} GB, "
+                f"compute capability {self.compute_capability}), BF16 "
+                f"{'suportado' if self.bf16_supported else 'NÃO suportado'} → precisão "
+                f"{self.compute_dtype} (bf16={self.bf16}, fp16={self.fp16}); "
                 f"torch {self.torch_version}, transformers {self.transformers_version}."
             )
         problems: list[str] = []
@@ -81,23 +90,19 @@ def _version(module_name: str) -> tuple[str, bool]:
         return "ausente", False
 
 
-def check_environment() -> EnvironmentReport:
-    """Verifica GPU e dependências sem falhar quando algo está ausente."""
+def check_environment(config: QLoRAConfig | None = None) -> EnvironmentReport:
+    """Verifica GPU, precisão e dependências sem falhar quando algo está ausente."""
     missing: list[str] = []
-    gpu_available = False
-    gpu_name = "n/d"
-    gpu_memory = 0.0
 
     torch_version, has_torch = _version("torch")
-    if has_torch:
-        import torch
-
-        gpu_available = torch.cuda.is_available()
-        if gpu_available:
-            gpu_name = torch.cuda.get_device_name(0)
-            gpu_memory = torch.cuda.get_device_properties(0).total_memory / (1024**3)
-    else:
+    if not has_torch:
         missing.append("torch")
+
+    # A precisão é decidida em um único lugar (fine_tuning.precision) e apenas
+    # reportada aqui — trainer, provider e notebook consomem a mesma política.
+    policy = (config or QLoRAConfig()).resolve_precision() if has_torch else resolve_precision(
+        {"cuda_available": False}
+    )
 
     transformers_version, has_transformers = _version("transformers")
     if not has_transformers:
@@ -116,9 +121,14 @@ def check_environment() -> EnvironmentReport:
         missing.append("datasets")
 
     return EnvironmentReport(
-        gpu_available=gpu_available,
-        gpu_name=gpu_name,
-        gpu_memory_gb=round(gpu_memory, 2),
+        gpu_available=policy.cuda_available,
+        gpu_name=policy.gpu_name,
+        gpu_memory_gb=policy.gpu_memory_gb,
+        compute_capability=policy.compute_capability,
+        bf16_supported=policy.bf16_supported,
+        compute_dtype=policy.compute_dtype_name,
+        bf16=policy.bf16,
+        fp16=policy.fp16,
         torch_version=torch_version,
         transformers_version=transformers_version,
         peft_version=peft_version,
@@ -173,13 +183,13 @@ def load_splits(dataset_dir: Path | str | None = None) -> dict[str, Any]:
     return splits
 
 
-def _build_model_and_tokenizer(config: QLoRAConfig):
+def _build_model_and_tokenizer(config: QLoRAConfig, policy: "PrecisionPolicy | None" = None):
     """Carrega o modelo base quantizado em 4 bits e prepara para PEFT."""
-    import torch
     from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
     from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-    compute_dtype = getattr(torch, config.bnb_4bit_compute_dtype, torch.bfloat16)
+    effective = policy or config.resolve_precision()
+    compute_dtype = effective.torch_dtype()
     quantization_config = BitsAndBytesConfig(
         load_in_4bit=config.load_in_4bit,
         bnb_4bit_quant_type=config.bnb_4bit_quant_type,
@@ -250,7 +260,7 @@ def train(
     target = Path(output_dir or (settings.project_root / cfg.output_dir))
     target.mkdir(parents=True, exist_ok=True)
 
-    environment = check_environment()
+    environment = check_environment(cfg)
     if not environment.ready:
         return {
             "status": "skipped",
@@ -273,7 +283,8 @@ def train(
     from transformers import TrainingArguments
     from trl import SFTConfig, SFTTrainer
 
-    model, tokenizer, _ = _build_model_and_tokenizer(cfg)
+    policy = cfg.resolve_precision()
+    model, tokenizer, _ = _build_model_and_tokenizer(cfg, policy)
     parameter_summary = _trainable_parameter_summary(model)
 
     sft_config = SFTConfig(
@@ -289,7 +300,8 @@ def train(
         optim=cfg.optim,
         max_length=cfg.max_seq_length,
         gradient_checkpointing=cfg.gradient_checkpointing,
-        bf16=cfg.bf16,
+        bf16=policy.bf16,
+        fp16=policy.fp16,
         logging_steps=cfg.logging_steps,
         eval_strategy=cfg.eval_strategy if "validation" in splits else "no",
         save_strategy=cfg.save_strategy,
@@ -320,6 +332,7 @@ def train(
         "status": "ok",
         "executado_em": datetime.now(UTC).isoformat(),
         "ambiente": environment.to_dict(),
+        "precisao": policy.to_dict(),
         "config": cfg.to_dict(),
         "splits": {name: len(dataset) for name, dataset in splits.items()},
         "parametros": parameter_summary,
@@ -340,12 +353,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--lr", type=float, default=None)
     parser.add_argument("--dataset-dir", default=None)
     parser.add_argument("--output", default=None)
+    parser.add_argument("--precision", default=None, choices=["auto", "bf16", "fp16"],
+                        help="força a precisão; padrão 'auto' decide pela GPU")
     parser.add_argument("--dry-run", action="store_true", help="valida ambiente e dataset e sai")
     parser.add_argument("--check-env", action="store_true", help="apenas diagnostica o ambiente")
     args = parser.parse_args(argv)
 
     if args.check_env:
-        report = check_environment()
+        report = check_environment(QLoRAConfig(precision=args.precision or "auto"))
         print(json.dumps(report.to_dict(), ensure_ascii=False, indent=2))
         print(report.explain())
         return 0 if report.ready else 1
@@ -357,6 +372,8 @@ def main(argv: list[str] | None = None) -> int:
         config.num_train_epochs = args.epochs
     if args.lr:
         config.learning_rate = args.lr
+    if args.precision:
+        config.precision = args.precision
 
     result = train(
         config, dataset_dir=args.dataset_dir, output_dir=args.output, dry_run=args.dry_run

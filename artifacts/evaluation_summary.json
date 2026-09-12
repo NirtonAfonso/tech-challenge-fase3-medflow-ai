@@ -9,7 +9,7 @@
     "hit_at_k": 0.875,
     "doc_hit_at_k": 0.975,
     "mrr": 0.6613,
-    "latencia_media_ms": 0.58,
+    "latencia_media_ms": 0.53,
     "falhas": [
       "RAG-002",
       "RAG-004",

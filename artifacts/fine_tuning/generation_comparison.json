@@ -1,23 +1,23 @@
 {
-  "gerado_em": "2026-09-11T08:42:18.571982+00:00",
+  "gerado_em": "2026-09-12T04:52:57.519766+00:00",
   "n_exemplos": 22,
   "sistemas": [
     {
-      "sistema": "sem_rag",
+      "sistema": "template_sem_rag",
       "n_exemplos": 22,
       "formato": 1.0,
       "citacao_presente": 0.0,
       "citacao_correta": 0.0,
       "groundedness": 0.0,
-      "sobreposicao_ref": 0.2756,
-      "token_f1": 0.3872,
+      "sobreposicao_ref": 0.2752,
+      "token_f1": 0.3899,
       "taxa_recusa_correta": 0.0,
-      "comprimento_medio": 332.5,
+      "comprimento_medio": 333.4,
       "exemplos": [
         {
           "id": "SFT-PROC-INT-002-1",
           "instrucao": "O que o protocolo institucional diz sobre objetivo em Alta Hospitalar Segura e Reconciliação Medicamentosa?",
-          "resposta": "RESPOSTA: Nenhum trecho de protocolo foi recuperado. [fonte não identificada]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
+          "resposta": "RESPOSTA: Nenhum trecho de protocolo foi recuperado para esta pergunta. [fonte não identificada]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
           "referencia": "RESPOSTA: Reduzir reinternações evitáveis e eventos adversos relacionados a medicamentos após a alta. [PROC-INT-002 §1 Objetivo]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolo institucional; a conduta final é do médico assistente."
         },
         {
@@ -29,7 +29,7 @@
         {
           "id": "SFT-PROC-INT-002-3",
           "instrucao": "O que o protocolo institucional diz sobre reconciliação medicamentosa em Alta Hospitalar Segura e Reconciliação Medicamentosa?",
-          "resposta": "RESPOSTA: Nenhum trecho de protocolo foi recuperado. [fonte não identificada]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
+          "resposta": "RESPOSTA: Nenhum trecho de protocolo foi recuperado para esta pergunta. [fonte não identificada]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
           "referencia": "RESPOSTA: Comparar a lista de medicamentos em uso antes da internação com a prescrição hospitalar atual e com a prescrição de alta. Toda diferença deve ser classificada como intencional documentada ou discrepância a ser resolvida com o médico assistente. Medicamentos suspensos durante a internação e que devem ser retomados precisam constar explicitamente do sumário. [PROC-INT-002 §3 Reconciliação "
         },
         {
@@ -41,13 +41,13 @@
         {
           "id": "SFT-PROC-INT-002-5",
           "instrucao": "O que o protocolo institucional diz sobre exames pendentes na alta em Alta Hospitalar Segura e Reconciliação Medicamentosa?",
-          "resposta": "RESPOSTA: Nenhum trecho de protocolo foi recuperado. [fonte não identificada]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
+          "resposta": "RESPOSTA: Nenhum trecho de protocolo foi recuperado para esta pergunta. [fonte não identificada]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolos institucionais; a conduta final é do médico assistente.",
           "referencia": "RESPOSTA: Nenhum paciente recebe alta com exame crítico pendente sem que exista responsável nominal por avaliar o resultado. Essa informação é registrada no sumário de alta e comunicada ao seguimento ambulatorial. [PROC-INT-002 §5 Exames pendentes na alta]\nCONTEXTO DO PACIENTE: não utilizado\nPENDÊNCIAS E ALERTAS: nenhuma\nLIMITAÇÃO: conteúdo assistivo baseado em protocolo institucional; a conduta f"
         }
       ]
     },
     {
-      "sistema": "com_rag",
+      "sistema": "template_com_rag",
       "n_exemplos": 22,
       "formato": 1.0,
       "citacao_presente": 1.0,

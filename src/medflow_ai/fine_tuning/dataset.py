@@ -39,6 +39,8 @@ from medflow_ai.data.corpus import ProtocolDocument, load_corpus
 from medflow_ai.llm.prompts import ASSISTANT_SYSTEM_PROMPT
 
 __all__ = [
+    "SFT_FIXTURE_SEED",
+    "SFT_FIXTURE_PATIENTS",
     "SFTExample",
     "DatasetStats",
     "build_sft_dataset",
@@ -53,6 +55,11 @@ __all__ = [
 # pergunta) evita que uma pergunta de treino e uma de teste venham da mesma
 # seção, o que tornaria o benchmark trivial.
 HELD_OUT_DOCUMENTS: frozenset[str] = frozenset({"PROT-NEF-001", "PROT-PNE-001", "PROC-INT-002"})
+
+# Salt fixo APENAS para os pseudônimos que aparecem dentro dos exemplos de treino.
+# Usar MEDFLOW_PSEUDONYM_SALT aqui faria o dataset (e seus fingerprints) mudar
+# conforme a variável de ambiente da máquina, quebrando a reprodutibilidade.
+SFT_FIXTURE_SALT = "medflow-sft-fixture-v1"
 
 _MIN_ANSWER_CHARS = 80
 _MAX_ANSWER_CHARS = 2400
@@ -262,8 +269,51 @@ _PATIENT_EXAMPLES: tuple[tuple[str, str, str], ...] = (
 )
 
 
-def _generate_filled_report_examples(limit: int = 10) -> list[SFTExample]:
-    """Exemplos de laudo preenchido a partir do prontuário sintético.
+# Semente e volume da fixture de laudos do SFT. São CONSTANTES do dataset, não
+# configuração de runtime: mudá-las muda o dataset e exige regenerar o manifesto.
+SFT_FIXTURE_SEED = 20260301
+SFT_FIXTURE_PATIENTS = 10
+
+
+def _sft_report_fixture() -> list[dict[str, Any]]:
+    """Registros canônicos de paciente usados só pelo dataset de fine-tuning.
+
+    Gerados **em memória** com semente própria, sem tocar o SQLite do assistente.
+
+    Por que não ler o banco: o `hospital.db` é mutável — o usuário pode
+    reconstruí-lo com 8 ou 40 pacientes, e o notebook 04 o recria. Se o dataset
+    de treino dependesse dele, o mesmo comando produziria datasets diferentes
+    conforme o que tivesse rodado antes, quebrando a reprodutibilidade do
+    manifesto e do split.
+    """
+    from medflow_ai.database.synthetic_patients import generate_dataset
+
+    dataset = generate_dataset(n_patients=SFT_FIXTURE_PATIENTS, seed=SFT_FIXTURE_SEED)
+
+    # Última medida de cada exame, por paciente — equivalente ao que o
+    # repositório devolveria, porém calculado sobre a fixture em memória.
+    por_paciente: dict[str, dict[str, dict[str, Any]]] = {}
+    for observacao in dataset.observations:
+        exames = por_paciente.setdefault(observacao["patient"], {})
+        atual = exames.get(observacao["description"])
+        if atual is None or observacao["date"] > atual["date"]:
+            exames[observacao["description"]] = observacao
+
+    registros: list[dict[str, Any]] = []
+    for paciente in dataset.patients:
+        exames = sorted(
+            por_paciente.get(paciente["id"], {}).values(),
+            key=lambda item: (item["date"], item["description"]),
+            reverse=True,
+        )[:4]
+        if not exames:
+            continue
+        registros.append({"paciente": paciente, "exames": exames})
+    return registros[:SFT_FIXTURE_PATIENTS]
+
+
+def _generate_filled_report_examples() -> list[SFTExample]:
+    """Exemplos de laudo preenchido a partir de registros sintéticos canônicos.
 
     Estes exemplos nascem propositalmente **com identificadores diretos** (nome,
     CPF, CNS, telefone, endereço) no enunciado, exatamente como chegaria um
@@ -273,50 +323,38 @@ def _generate_filled_report_examples(limit: int = 10) -> list[SFTExample]:
     A saída, por sua vez, já nasce pseudonimizada: o laudo institucional usa
     pseudônimo e faixa etária, nunca nome e data de nascimento.
     """
-    try:
-        from medflow_ai.database.repository import PatientRepository
-    except ImportError:  # pragma: no cover
-        return []
-
-    try:
-        repository = PatientRepository()
-    except FileNotFoundError:
-        # Banco ainda não construído: o pipeline segue apenas com o corpus.
-        return []
-
     from medflow_ai.data.anonymization import age_band, birthdate_to_age, pseudonymize
 
     examples: list[SFTExample] = []
-    for patient_id in repository.list_patient_ids(limit=limit):
-        raw = repository.raw_record(patient_id)
-        observations = repository.latest_observations(patient_id, limit=4)
-        if not observations:
-            continue
+    for registro in _sft_report_fixture():
+        paciente = registro["paciente"]
+        exames = registro["exames"]
+        patient_id = paciente["id"]
 
-        idade = birthdate_to_age(raw.get("birthdate", ""))
+        idade = birthdate_to_age(paciente.get("birthdate", ""))
         bloco_bruto = (
-            f"Paciente: {raw.get('first', '')} {raw.get('last', '')}\n"
-            f"CPF: {raw.get('cpf', '')} | CNS: {raw.get('cns', '')}\n"
-            f"Data de nascimento: {raw.get('birthdate', '')} | Sexo: {raw.get('gender', '')}\n"
-            f"Contato: {raw.get('phone', '')} | {raw.get('email', '')}\n"
-            f"Endereço: {raw.get('address', '')}, {raw.get('city', '')}/{raw.get('state', '')} "
-            f"CEP {raw.get('zip', '')}\n"
+            f"Paciente: {paciente.get('first', '')} {paciente.get('last', '')}\n"
+            f"CPF: {paciente.get('cpf', '')} | CNS: {paciente.get('cns', '')}\n"
+            f"Data de nascimento: {paciente.get('birthdate', '')} | Sexo: {paciente.get('gender', '')}\n"
+            f"Contato: {paciente.get('phone', '')} | {paciente.get('email', '')}\n"
+            f"Endereço: {paciente.get('address', '')}, {paciente.get('city', '')}/"
+            f"{paciente.get('state', '')} CEP {paciente.get('zip', '')}\n"
             "Resultados:\n"
             + "\n".join(
-                f"  {item['exame']}: {item['valor']} {item['unidade']} ({item['data']})"
-                for item in observations
+                f"  {item['description']}: {item['value']} {item['units']} ({item['date']})"
+                for item in exames
             )
         )
         resultados = "; ".join(
-            f"{item['exame']} {item['valor']} {item['unidade']}" for item in observations
+            f"{item['description']} {item['value']} {item['units']}" for item in exames
         )
         saida = (
             "RESPOSTA: Laudo preenchido conforme o modelo institucional, com identificação "
             "pseudonimizada e faixa etária no lugar da data de nascimento "
             "[MOD-LAU-001 §1 Regras gerais de redação de laudo].\n"
-            f"IDENTIFICAÇÃO: PSEUDO-{pseudonymize(patient_id, length=8)} — sexo "
-            f"{raw.get('gender', 'não informado')} — faixa etária {age_band(idade)}\n"
-            f"DATA DO EXAME: {observations[0]['data']}\n"
+            f"IDENTIFICAÇÃO: PSEUDO-{pseudonymize(patient_id, salt=SFT_FIXTURE_SALT, length=8)} — sexo "
+            f"{paciente.get('gender', 'não informado')} — faixa etária {age_band(idade)}\n"
+            f"DATA DO EXAME: {exames[0]['date']}\n"
             f"RESULTADOS: {resultados}\n"
             "IMPRESSÃO: achados laboratoriais a serem correlacionados ao quadro clínico.\n"
             "CONTEXTO DO PACIENTE: dados laboratoriais e demográficos minimizados do prontuário.\n"

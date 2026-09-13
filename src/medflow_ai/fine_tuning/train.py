@@ -175,8 +175,9 @@ def load_splits(dataset_dir: Path | str | None = None) -> dict[str, Any]:
     """
     from datasets import Dataset
 
-    settings = get_settings()
-    directory = Path(dataset_dir or (settings.project_root / "data" / "processed" / "sft"))
+    from medflow_ai.fine_tuning.dataset import default_sft_dir
+
+    directory = Path(dataset_dir or default_sft_dir())
     if not (directory / "train.jsonl").exists():
         from medflow_ai.fine_tuning.dataset import build_sft_dataset
 
@@ -340,7 +341,9 @@ def train(
 
     from medflow_ai.colab import git_info, package_versions
 
-    dataset_manifest = Path(dataset_dir or (settings.project_root / "data" / "processed" / "sft"))
+    from medflow_ai.fine_tuning.dataset import default_sft_dir
+
+    dataset_manifest = Path(dataset_dir or default_sft_dir())
     manifest_hash = _manifest_hash(dataset_manifest / "manifest.json")
     repositorio = git_info(settings.project_root)
 

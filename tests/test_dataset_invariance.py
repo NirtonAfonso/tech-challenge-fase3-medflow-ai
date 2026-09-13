@@ -156,3 +156,29 @@ def test_familias_especiais_ficam_no_treino_e_estao_documentadas(tmp_path) -> No
     }
     for especial in ("seguranca", "contexto_paciente", "laudo_preenchido"):
         assert especial in familias_treino
+
+
+def test_construcao_respeita_medflow_data_dir(tmp_path, monkeypatch) -> None:
+    """Regressão: `cli build-dataset` escrevia na raiz do repo, ignorando o sandbox.
+
+    O conftest promete que nenhum teste toca os artefatos versionados, mas o
+    caminho do dataset era derivado de `project_root` em vez de `MEDFLOW_DATA_DIR`.
+    Consequência real: rodar `pytest tests/test_cli.py` sujava
+    `data/processed/sft/manifest.json` no repositório.
+    """
+    from medflow_ai.cli import main
+    from medflow_ai.fine_tuning.dataset import default_sft_dir
+
+    monkeypatch.setenv("MEDFLOW_DATA_DIR", str(tmp_path / "dados"))
+    reload_settings()
+
+    esperado = tmp_path / "dados" / "processed" / "sft"
+    assert default_sft_dir() == esperado
+
+    assert main(["build-dataset", "--seed", "42"]) == 0
+    assert (esperado / "manifest.json").exists()
+    assert (esperado / "train.jsonl").exists()
+
+    monkeypatch.delenv("MEDFLOW_DATA_DIR", raising=False)
+    reload_settings()
+    assert default_sft_dir() != esperado

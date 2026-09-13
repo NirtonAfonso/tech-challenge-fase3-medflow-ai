@@ -39,6 +39,7 @@ from medflow_ai.data.corpus import ProtocolDocument, load_corpus
 from medflow_ai.llm.prompts import ASSISTANT_SYSTEM_PROMPT
 
 __all__ = [
+    "default_sft_dir",
     "SFT_FIXTURE_SEED",
     "SFT_FIXTURE_PATIENTS",
     "SFTExample",
@@ -55,6 +56,16 @@ __all__ = [
 # pergunta) evita que uma pergunta de treino e uma de teste venham da mesma
 # seção, o que tornaria o benchmark trivial.
 HELD_OUT_DOCUMENTS: frozenset[str] = frozenset({"PROT-NEF-001", "PROT-PNE-001", "PROC-INT-002"})
+
+
+def default_sft_dir() -> Path:
+    """Diretório padrão do dataset SFT, derivado de ``MEDFLOW_DATA_DIR``.
+
+    Precisa passar pela configuração, e não pela raiz do repositório: os testes
+    apontam ``MEDFLOW_DATA_DIR`` para um sandbox, e um caminho fixo faria uma
+    execução de teste sobrescrever o dataset versionado.
+    """
+    return get_settings().data_dir / "processed" / "sft"
 
 # Salt fixo APENAS para os pseudônimos que aparecem dentro dos exemplos de treino.
 # Usar MEDFLOW_PSEUDONYM_SALT aqui faria o dataset (e seus fingerprints) mudar
@@ -529,7 +540,7 @@ def write_dataset(
     anonymization: AnonymizationReport | None = None,
 ) -> dict[str, Path]:
     """Escreve os splits em JSONL e o manifesto reprodutível."""
-    target = Path(output_dir or (get_settings().project_root / "data" / "processed" / "sft"))
+    target = Path(output_dir or default_sft_dir())
     target.mkdir(parents=True, exist_ok=True)
 
     written: dict[str, Path] = {}

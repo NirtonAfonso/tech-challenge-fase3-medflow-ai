@@ -29,6 +29,12 @@ def _isolated_environment(sandbox: Path):
     previous = dict(os.environ)
     os.environ.update(
         {
+            # MEDFLOW_DATA_DIR precisa entrar aqui: sem ele, o dataset SFT é
+            # escrito na árvore do repositório e um `pytest` deixa
+            # data/processed/sft/manifest.json sujo. O corpus e os benchmarks
+            # são resolvidos a partir da raiz do projeto, então continuam
+            # visíveis com o data_dir redirecionado.
+            "MEDFLOW_DATA_DIR": str(sandbox / "data"),
             "MEDFLOW_DB_PATH": str(sandbox / "hospital.db"),
             "MEDFLOW_LOG_DIR": str(sandbox / "logs"),
             "MEDFLOW_ARTIFACTS_DIR": str(sandbox / "artifacts"),

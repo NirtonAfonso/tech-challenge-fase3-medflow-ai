@@ -123,8 +123,9 @@ class GenerationMetrics:
 
 def load_test_examples(dataset_dir: Path | str | None = None, split: str = "test") -> list[dict[str, Any]]:
     """Carrega exemplos do split congelado (documentos held-out)."""
-    settings = get_settings()
-    directory = Path(dataset_dir or (settings.project_root / "data" / "processed" / "sft"))
+    from medflow_ai.fine_tuning.dataset import default_sft_dir
+
+    directory = Path(dataset_dir or default_sft_dir())
     path = directory / f"{split}.jsonl"
     if not path.exists():
         from medflow_ai.fine_tuning.dataset import build_sft_dataset
